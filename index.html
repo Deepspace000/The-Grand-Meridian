@@ -6,7 +6,7 @@
 <title>The Grand Meridian Hotel — Cutaway</title>
 <style>
   html,body{margin:0;padding:0;background:#0b1026;overflow:hidden;height:100%;font-family:Georgia,'Times New Roman',serif;}
-  #stage{position:fixed;inset:0;display:block;}
+  #stage{position:fixed;inset:0;display:block;touch-action:none;}
   .panel{position:fixed;background:linear-gradient(180deg,#f6ecd4,#efe2c2);border:3px solid #6b4a2b;border-radius:8px;
     box-shadow:0 6px 24px rgba(0,0,0,.55), inset 0 0 40px rgba(120,80,30,.15);color:#3a2a16;font-size:12.5px;line-height:1.45;}
   #hud{top:12px;left:12px;padding:10px 14px;min-width:230px;}
@@ -89,6 +89,7 @@
     <span class="btn" id="spd0">❚❚</span><span class="btn on" id="spd1">▶</span><span class="btn" id="spd2">▶▶</span><span class="btn" id="spd3">▶▶▶</span>
   </div>
   <div style="margin:0 0 6px"><span class="btn" id="menuBtn">🍽 Hotel Menu</span></div>
+  <div class="sub" style="font-size:10px;margin-bottom:5px">scroll / pinch to zoom · drag to pan</div>
   <div class="money" id="moneybox"></div>
 </div>
 
@@ -180,12 +181,46 @@ const FLOORS=[
 ];
 const TOPFL=7;
 const cv=document.getElementById('stage'), ctx=cv.getContext('2d');
-let scale=1, offX=0, offY=0;
+let scale=1, offX=0, offY=0;          // base fit-to-window transform
+let zoomZ=1, camX=0, camY=0;          // user zoom (wheel/pinch) and pan (drag)
+function camScale(){return scale*zoomZ;}
+function clampCam(){const S=camScale(), wpx=W*S, hpx=H*S;
+  if(zoomZ<=1.001){zoomZ=1; camX=offX; camY=offY; return;}
+  camX = wpx<=cv.width  ? (cv.width -wpx)/2 : Math.min(60, Math.max(cv.width -wpx-60, camX));
+  camY = hpx<=cv.height ? (cv.height-hpx)/2 : Math.min(60, Math.max(cv.height-hpx-60, camY));}
 function resize(){ cv.width=innerWidth*devicePixelRatio; cv.height=innerHeight*devicePixelRatio;
   cv.style.width=innerWidth+'px'; cv.style.height=innerHeight+'px';
   scale=Math.min(innerWidth/W, innerHeight/H)*devicePixelRatio;
-  offX=(cv.width-W*scale)/2; offY=(cv.height-H*scale)/2; }
+  offX=(cv.width-W*scale)/2; offY=(cv.height-H*scale)/2;
+  if(zoomZ<=1){camX=offX; camY=offY;} else clampCam(); }
 addEventListener('resize',resize); resize();
+// wheel to zoom (about the cursor), drag to pan, pinch on touch
+cv.addEventListener('wheel',e=>{e.preventDefault();
+  const dpr=devicePixelRatio, mx=e.clientX*dpr, my=e.clientY*dpr;
+  const S=camScale(), wx=(mx-camX)/S, wy=(my-camY)/S;
+  zoomZ=Math.min(5,Math.max(1,zoomZ*(e.deltaY<0?1.15:1/1.15)));
+  const S2=camScale(); camX=mx-wx*S2; camY=my-wy*S2; clampCam();
+  cv.style.cursor=zoomZ>1?'grab':'default';
+},{passive:false});
+{const ptrs=new Map(); let pinch0=null;
+ cv.addEventListener('pointerdown',e=>{ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+   try{cv.setPointerCapture(e.pointerId);}catch(_){}
+   if(ptrs.size===2){const[a,b]=[...ptrs.values()];pinch0={d:Math.hypot(a.x-b.x,a.y-b.y),z:zoomZ};}
+   if(zoomZ>1)cv.style.cursor='grabbing';});
+ cv.addEventListener('pointermove',e=>{
+   if(!ptrs.has(e.pointerId))return;
+   const prev=ptrs.get(e.pointerId); ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+   const dpr=devicePixelRatio;
+   if(ptrs.size===1&&zoomZ>1.001){camX+=(e.clientX-prev.x)*dpr; camY+=(e.clientY-prev.y)*dpr; clampCam();}
+   else if(ptrs.size===2&&pinch0){const[a,b]=[...ptrs.values()];
+     const d=Math.hypot(a.x-b.x,a.y-b.y);
+     const cx2=(a.x+b.x)/2*dpr, cy2=(a.y+b.y)/2*dpr;
+     const S=camScale(), wx=(cx2-camX)/S, wy=(cy2-camY)/S;
+     zoomZ=Math.min(5,Math.max(1,pinch0.z*d/Math.max(1,pinch0.d)));
+     const S2=camScale(); camX=cx2-wx*S2; camY=cy2-wy*S2; clampCam();}});
+ const endPtr=e=>{ptrs.delete(e.pointerId); if(ptrs.size<2)pinch0=null;
+   cv.style.cursor=zoomZ>1?'grab':'default';};
+ cv.addEventListener('pointerup',endPtr); cv.addEventListener('pointercancel',endPtr);}
 
 const rnd=(a,b)=>a+Math.random()*(b-a);
 const ri=(a,b)=>Math.floor(rnd(a,b+1));
@@ -1382,7 +1417,7 @@ function hashLit(seed,day){return (Math.abs(Math.sin(seed*12.9898+day*78.233))*4
 function render(time){
   const h=hourNow(), day=dayNow(), dk=darkness(h);
   ctx.setTransform(1,0,0,1,0,0); ctx.fillStyle='#06080f'; ctx.fillRect(0,0,cv.width,cv.height);
-  ctx.setTransform(scale,0,0,scale,offX,offY);
+  ctx.setTransform(camScale(),0,0,camScale(),camX,camY);
   // sky
   const [top,bot]=skyColors(h);
   const grd=ctx.createLinearGradient(0,0,0,STREET); grd.addColorStop(0,rgb(top)); grd.addColorStop(1,rgb(bot));
@@ -1544,9 +1579,10 @@ function drawAmbient(time,h,dk,day){
    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(hh)*3.5,cy+Math.sin(hh)*3.5);ctx.stroke();
    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(mm)*5,cy+Math.sin(mm)*5);ctx.stroke();
    ctx.strokeStyle='#8a7a5a';ctx.beginPath();ctx.arc(cx,cy,6.5,0,7);ctx.stroke();}
-  // rooftop sign: hums up through the dusk into full neon glory
+  // rooftop sign: switches on at five o'clock with the street lamps
   const nf=nightF(dk);
-  if(nf>0.01){const a=nf*(0.75+0.25*Math.min(1,dk*2))*(0.94+0.06*Math.sin(time*1.3));
+  const signOn=h>=17||h<6.25;
+  if(signOn){const a=Math.max(nf,0.45)*(0.94+0.06*Math.sin(time*1.3));
     ctx.save();ctx.globalCompositeOperation='lighter';           // big soft halo behind the board
     const sg2=ctx.createRadialGradient(750,214,10,750,214,340);
     sg2.addColorStop(0,'rgba(255,180,90,'+(0.30*a)+')');sg2.addColorStop(1,'rgba(255,180,90,0)');
@@ -1557,15 +1593,16 @@ function drawAmbient(time,h,dk,day){
     ctx.fillText('THE  GRAND  MERIDIAN',750,222);
     ctx.shadowBlur=6; ctx.fillStyle='rgba(255,240,200,'+(0.85*a)+')';
     ctx.fillText('THE  GRAND  MERIDIAN',750,222);ctx.restore();
-    // marquee bulbs along the bottom edge, each with its own little halo
+    // marquee bulbs along the bottom edge, each with a proper glowing halo
     ctx.save();ctx.globalCompositeOperation='lighter';
-    for(let bx=444;bx<=1058;bx+=24){const tw=0.72+0.28*Math.sin(time*3+bx*0.7), ba=a*tw;
-      const bg2=ctx.createRadialGradient(bx,236,0.5,bx,236,8);
-      bg2.addColorStop(0,'rgba(255,225,150,'+(0.65*ba)+')');bg2.addColorStop(1,'rgba(255,225,150,0)');
-      ctx.fillStyle=bg2;ctx.beginPath();ctx.arc(bx,236,8,0,7);ctx.fill();}
+    for(let bx=444;bx<=1058;bx+=24){const tw=0.7+0.3*Math.sin(time*3+bx*0.7), ba=a*tw;
+      const bg2=ctx.createRadialGradient(bx,236,0.5,bx,236,12);
+      bg2.addColorStop(0,'rgba(255,228,155,'+(0.95*ba)+')');bg2.addColorStop(0.4,'rgba(255,210,120,'+(0.4*ba)+')');
+      bg2.addColorStop(1,'rgba(255,210,120,0)');
+      ctx.fillStyle=bg2;ctx.beginPath();ctx.arc(bx,236,12,0,7);ctx.fill();}
     ctx.restore();
-    for(let bx=444;bx<=1058;bx+=24){const tw=0.72+0.28*Math.sin(time*3+bx*0.7);
-      ctx.fillStyle='rgba(255,242,200,'+(a*tw)+')';ctx.beginPath();ctx.arc(bx,236,2,0,7);ctx.fill();}}
+    for(let bx=444;bx<=1058;bx+=24){const tw=0.7+0.3*Math.sin(time*3+bx*0.7);
+      ctx.fillStyle='rgba(255,246,215,'+Math.min(1,a*tw*1.15)+')';ctx.beginPath();ctx.arc(bx,236,2.3,0,7);ctx.fill();}}
   drawSignBirds(dk);
   // street lanterns come on at five o'clock sharp
   const lampsOn=h>=17||h<6.25;
@@ -1673,6 +1710,7 @@ function drawLighting(h,dk,time,day){
   for(let fi=0;fi<7;fi++)light(770,(FLOORS[fi].y+FLOORS[fi+1].y)/2-26,24); // dim stairwell landings
   if(h>15||h<7)light(1106,FLOORS[2].y-24,20);                   // lounge candle
   if(h>=17||h<6.25)for(const lx of STREETLAMPS)light(lx,STREET-88,72); // street lamps, on at 5pm
+  if(h>=17||h<6.25){light(540,214,120);light(750,214,130);light(960,214,120);} // the sign burns through the dark
   for(const L of DECOR_LAMPS)light(L.x,L.y,L.r);                // miniature fittings
   light(BL-30,STREET-52,52);                                    // porch
   if(!fx.boilerBroken)light(400,FLOORS[0].y-12,46);             // boiler glow
@@ -1757,7 +1795,8 @@ addEventListener('keydown',e=>{if(e.key==='Escape')$('menuCard').style.display='
 // tooltip
 const tip=$('tip');
 addEventListener('mousemove',e=>{
-  const wx=(e.clientX*devicePixelRatio-offX)/scale, wy=(e.clientY*devicePixelRatio-offY)/scale;
+  const S=camScale();
+  const wx=(e.clientX*devicePixelRatio-camX)/S, wy=(e.clientY*devicePixelRatio-camY)/S;
   let best=null,bd=24;
   for(const p of people){if(p.floor===null||p.kind==='ambient')continue;
     const d=Math.hypot(p.x-wx,footY(p)-17-wy); if(d<bd){bd=d;best=p;}}
