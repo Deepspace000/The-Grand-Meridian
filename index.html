@@ -930,6 +930,7 @@ function drawPerson(p,time){
   const bodyH=sit?10:13, legH=sit?6:10;
   const baseY=y-bob;
   ctx.save(); ctx.translate(x,baseY); if(p.dir<0)ctx.scale(-1,1);
+  if(p.child)ctx.scale(0.68,0.68);   // the little ones
   ctx.fillStyle='rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(0,0.5,7,2,0,0,7); ctx.fill();
   // legs
   ctx.strokeStyle=p.pants; ctx.lineWidth=3; ctx.lineCap='round';
@@ -999,6 +1000,15 @@ stan.floor=0; stan.x=1150; stan.state='idle';
 const FIRST_M=['Arthur','Henry','George','Walter','Frank','Albert','Cecil','Gilbert','Percy','Hugh','Norman','Rex','Basil','Leonard','Oscar'];
 const FIRST_F=['Mabel','Clara','Florence','Betty','Hazel','Nora','Ruth','Vera','Ida','Elsie','Iris','Opal','Dot','Faye','Winnie'];
 const LAST=['Finch','Cartwright','Bloom','Ashdown','Merriweather','Pike','Woolley','Hargreaves','Dunmore','Petty','Silverton','Cobb','Marlow','Quimby','Sedgwick','Trotter','Vane','Whitcombe','Yardley','Bexley'];
+// each household's people — they call in from time to time
+const FAMILY={
+ babbage:[{n:'Mrs Prudence Whitlow',rel:'their daughter',fem:1},{n:'Master Tommy Whitlow',rel:'their grandson',child:1}],
+ theo:[{n:'Mr Edmund Marsh',rel:'his brother'}],
+ agnes:[{n:'Miss Poppy Thornbury',rel:'her great-niece',fem:1,child:1}],
+ vivian:[{n:'Mrs Constance Bell',rel:'her sister',fem:1}],
+ zora:[{n:'Mr Nikolai Petrov',rel:'her nephew'},{n:'Maestro Sasha Lev',rel:'her old accompanist'}],
+ colonel:[{n:'Master Freddie Fitzwilliam',rel:'his grandson',child:1},{n:'Sgt. Albert Willis',rel:'his old batman'}],
+};
 
 // ---- planners (called every frame with h=hour, day, dtg=game-minutes elapsed) ----
 function planStaff(p,h,day,dtg){
@@ -1190,26 +1200,38 @@ function guestPostUpdate(p){
     if(p.kind==='guest'||p.kind==='visitor')cash(isDinner?42:18,null,p.x,footY(p)-30);
   }
 }
-// visitors
+// visitors — callers for the residents (often their own family) or diners off the street
 function spawnVisitor(h){
-  const social=Math.random()<0.45;
+  const social=Math.random()<0.5;
   const host=social?pick(TENANTS.filter(t=>typeof t.floor==='number'&&!t.sleeping)):null;
   if(social&&!host)return;
-  const fem=Math.random()<0.5;
-  const p=makePerson({name:(fem?pick(['Miss ','Mrs ']):'Mr ')+pick(fem?FIRST_F:FIRST_M)+' '+pick(LAST),kind:'visitor',
-    role:social?('visiting '+host.name):(h>=18?'dining in the ballroom':'taking tea in the café'),
-    dress:fem,shirt:pick(['#8a6a4a','#5a6a8a','#7a5a6a','#4a6a5a','#9a6a3a']),pants:'#3a3a30',
-    hat:fem?'cloche':null,hatCol:'#4a3a5a',
-    meta:{job:'visitor',leaveAt:tMin+ri(40,75),paid:{}}});
+  // half of all social calls are family
+  let fam=null;
+  if(social&&Math.random()<0.55&&FAMILY[host.meta.job]){
+    fam=pick(FAMILY[host.meta.job]);
+    if(fam.child&&h>=18.5)fam=FAMILY[host.meta.job].find(f=>!f.child)||null;   // children go home before dark
+    if(fam&&people.some(p=>p.name===fam.n))fam=null;                            // already here
+  }
+  const fem=fam?!!fam.fem:Math.random()<0.5;
+  const p=makePerson({
+    name:fam?fam.n:(fem?pick(['Miss ','Mrs ']):'Mr ')+pick(fem?FIRST_F:FIRST_M)+' '+pick(LAST),
+    kind:'visitor',
+    role:fam?('Family · '+fam.rel):(social?('caller for '+host.name.split(' ').pop()):(h>=18?'dining in the ballroom':'taking tea in the café')),
+    dress:fem,child:fam?!!fam.child:false,
+    shirt:fam&&fam.child?pick(['#c8742a','#5f7a9a','#7a9a5f']):pick(['#8a6a4a','#5a6a8a','#7a5a6a','#4a6a5a','#9a6a3a']),
+    pants:'#3a3a30',hat:fam&&fam.child?(fem?null:'cap'):(fem?'cloche':null),hatCol:'#4a3a5a',
+    meta:{job:'visitor',leaveAt:tMin+(fam?ri(60,130):ri(40,75)),paid:{}}});
   if(social){p.meta.dest=[host.floor,host.x+ri(-30,30)];p.statusText='calling on '+host.name;
-    logEvent(p.name+' is calling on '+host.name+'.');}
+    logEvent(fam?(p.name+' ('+fam.rel+') is visiting '+host.name+'.')
+                :(p.name+' is calling on '+host.name+'.'));}
   else{const spot=h>=18?[2,pick([314,368,430,446])]:[1,pick([806,844,862,900,916])];p.meta.dest=spot;p.meta.dine=true;
     p.statusText=h>=18?'dining in the ballroom':'in the café';}
   p.act=h>=18?'dine':'coffee'; routeTo(p,p.meta.dest[0],p.meta.dest[1],social?'stand':'sit');
 }
 function planVisitor(p){
   if(p.meta.gone)return;
-  if(tMin>=p.meta.leaveAt){p.meta.gone=true;p.statusText='heading home';routeTo(p,'out',0,'stand');}
+  // never turn for home mid-journey — arrive first, then watch the clock
+  if(tMin>=p.meta.leaveAt&&p.state!=='walk'){p.meta.gone=true;p.statusText='heading home';routeTo(p,'out',0,'stand');}
 }
 // tradies
 const TRADES=[
@@ -1292,7 +1314,7 @@ function economyTick(){
     if(free.length&&Math.random()<0.011*stepMins)bookRoom(pick(free));
   }
   // visitors
-  if(h>=13&&h<21&&Math.random()<0.004*stepMins)spawnVisitor(h);
+  if(h>=10&&h<21&&Math.random()<0.005*stepMins)spawnVisitor(h);
   // passersby (fewer souls braving foul weather)
   const wxOut=(weather.type==='rain'||weather.type==='storm'||weather.type==='snow')?0.35:1;
   if(Math.random()<(h>7&&h<22?0.02:0.003)*stepMins*wxOut)spawnPasserby();
