@@ -257,13 +257,13 @@ const ROOMS=[
  {id:'301',fl:4,x1:306,x2:518,suite:false},{id:'302',fl:4,x1:522,x2:698,suite:false},
  {id:'303',fl:4,x1:802,x2:988,suite:false},{id:'304',fl:4,x1:992,x2:1194,suite:true},
 ];
-ROOMS.forEach(r=>{r.bedX = r.x1<CORE_L ? r.x1+62 : r.x2-56; r.deskX=r.x1<CORE_L? r.x2-56 : r.x1+74;
+ROOMS.forEach(r=>{r.bedX = r.x1<CORE_L ? r.x1+62 : r.x2-66; r.deskX=r.x1<CORE_L? r.x2-70 : r.x1+74;
   r.guest=null; r.dirty=false; r.rate=r.suite?259:189;});
 const APTS=[
  {id:'4A',fl:5,x1:306,x2:698,rent:395,bedX:358,deskX:640},
- {id:'4B',fl:5,x1:802,x2:1194,rent:395,bedX:1150,deskX:860},
- {id:'5A',fl:6,x1:306,x2:698,rent:520,bedX:350,deskX:600},
- {id:'PH',fl:6,x1:802,x2:1194,rent:740,bedX:1150,deskX:880},
+ {id:'4B',fl:5,x1:802,x2:1194,rent:395,bedX:1118,deskX:860},
+ {id:'5A',fl:6,x1:306,x2:698,rent:520,bedX:358,deskX:600},
+ {id:'PH',fl:6,x1:802,x2:1194,rent:740,bedX:1118,deskX:880},
 ];
 const cleaningQueue=[];
 
@@ -360,22 +360,22 @@ function partition(x,top,fy){fr(g,x-2,top,4,fy-top,'#8f8070'); fr(g,x-2,top,4,3,
 function doorFrame(x,fy){fr(g,x-11,fy-34,22,34,'#5e4126'); fr(g,x-8,fy-31,16,31,'#8f6238'); fr(g,x+3,fy-18,3,3,'#d8b45a');}
 // apartment doors: static architrave + dark opening; the leaf itself is animated
 const DOORS=[]; // {fl,x,w,h,open,hold}
-function aptDoorway(x,fl){const fy=FLOORS[fl].y, w=26, h=44;
+function aptDoorway(x,fl,w=26,h=44){const fy=FLOORS[fl].y;
   fr(g,x-w/2-3,fy-h-4,w+6,h+4,'#5e4126');   // architrave
   fr(g,x-w/2-4,fy-h-7,w+8,3,'#c9a24a');     // deco lintel
   fr(g,x-w/2,fy-h,w,h,'#241a10');           // dark hallway behind
   DOORS.push({fl,x,w,h,open:0,hold:0});}
-function bathNook(x,y){ // ~28px tiled corner: shower stall + w.c.
-  fr(g,x,y-40,28,40,'#dce8ea');
+function bathNook(x,y){ // ~28px tiled corner: tall shower stall + w.c.
+  fr(g,x,y-48,28,48,'#dce8ea');
   g.strokeStyle='rgba(120,150,160,.3)'; g.lineWidth=0.7;
-  for(let i=1;i<5;i++){g.beginPath();g.moveTo(x,y-i*8);g.lineTo(x+28,y-i*8);g.stroke();}
-  for(let i=1;i<4;i++){g.beginPath();g.moveTo(x+i*7,y-40);g.lineTo(x+i*7,y);g.stroke();}
+  for(let i=1;i<6;i++){g.beginPath();g.moveTo(x,y-i*8);g.lineTo(x+28,y-i*8);g.stroke();}
+  for(let i=1;i<4;i++){g.beginPath();g.moveTo(x+i*7,y-48);g.lineTo(x+i*7,y);g.stroke();}
   g.strokeStyle='#8a9096'; g.lineWidth=1.5;                       // shower riser + arm
-  g.beginPath();g.moveTo(x+3,y-3);g.lineTo(x+3,y-33);g.lineTo(x+9,y-33);g.stroke();
-  g.fillStyle='#8a9096'; g.beginPath();g.moveTo(x+6,y-33);g.lineTo(x+12,y-33);g.lineTo(x+9,y-29);g.closePath();g.fill();
+  g.beginPath();g.moveTo(x+3,y-3);g.lineTo(x+3,y-42);g.lineTo(x+9,y-42);g.stroke();
+  g.fillStyle='#8a9096'; g.beginPath();g.moveTo(x+6,y-42);g.lineTo(x+12,y-42);g.lineTo(x+9,y-38);g.closePath();g.fill();
   fr(g,x+1,y-3,13,3,'#b8c0c4');                                   // tray
-  g.strokeStyle='#77808a'; g.lineWidth=1; g.beginPath();g.moveTo(x+1,y-32);g.lineTo(x+14,y-32);g.stroke();
-  fr(g,x+10,y-31,4,23,'rgba(180,215,225,.6)');                    // curtain
+  g.strokeStyle='#77808a'; g.lineWidth=1; g.beginPath();g.moveTo(x+1,y-41);g.lineTo(x+14,y-41);g.stroke();
+  fr(g,x+10,y-40,4,32,'rgba(180,215,225,.6)');                    // curtain
   fr(g,x+17,y-18,4,13,'#e8eae2');                                 // cistern
   fr(g,x+16,y-9,10,5,'#f0f2ea'); fr(g,x+16,y-10.5,11,2,'#d0d2c8');// bowl + seat
   fr(g,x+19,y-4,5,4,'#d8dad0');}                                  // base
@@ -431,7 +431,7 @@ function buildStatic(){
    cafeTable(868,y); chair(858,y,1); chair(902,y,-1);
    cafeTable(924,y); chair(914,y,1);
    counterTop(956,y,40,'#6e4a28'); fr(g,962,y-26,14,8,'#b8b0a0'); // cake dome
-   g.fillStyle='#3a2a16';g.font='bold 8px Georgia';g.fillText('CAFÉ  MERIDIAN',900,t+28);
+   g.fillStyle='#3a2a16';g.font='bold 8px Georgia';g.fillText('CAFÉ  MERIDIAN',830,t+38);
    partition(1000,t,y);
    fr(g,1004,t,IR-1004,y-t,'#d8e2e4'); g.fillStyle='rgba(0,0,0,.06)';for(let x=1004;x<IR;x+=16)for(let yy=t;yy<y;yy+=16)if((x+yy)%32<16)g.fillRect(x,yy,16,16); // tiles
    floorBoards(1004,IR,y,'#8a8478');
@@ -448,6 +448,7 @@ function buildStatic(){
    windowFrameReg(340,t+22,42,52,'#6b3050'); windowFrameReg(470,t+22,42,52,'#6b3050');
    chandelier(380,t+15); chandelier(520,t+15); chandelier(640,t+15);
    pianoStatic(600,y,true);
+   cafeTable(310,y); chair(344,y,-1);
    cafeTable(360,y); chair(350,y,1); chair(394,y,-1);
    cafeTable(430,y); chair(420,y,1); chair(464,y,-1);
    fr(g,IL+10,t+40,60,26,'#7a4a5e'); g.fillStyle='#e0c8a0';g.font='italic 8px Georgia';g.fillText('~ dancing nightly ~',IL+40,t+56); g.textAlign='center';
@@ -455,6 +456,7 @@ function buildStatic(){
    wallpaper(802,t,IR,y,'#9c8464','stripe'); carpet(802,IR,y,'#59452e');
    windowFrameReg(1058,t+16,40,46,'#6e5a3a');
    barCounter(820,y,90); fireplaceStatic(1130,y); sofa(940,y,54,'#6b4a3c'); chair(1016,y,-1); bookshelf(1035,y,44);
+   sideTable(1098,y); fr(g,1103,y-15,6,2,'#c9a24a'); fr(g,1104.5,y-21,3,6,'#f0ead8'); // candlestick by the fire
    plant(1188-16,y); rug(920,y,120,'#59452e','#b98d54');
   }
   // --- Hotel floors F2,F3 ---
@@ -462,17 +464,21 @@ function buildStatic(){
     const rooms=ROOMS.filter(r=>r.fl===fi);
     const wp=[['#c3d3dd','dot'],['#e6cdb8','stripe'],['#cfd8c2','dot'],['#e8c9c0','diamond']];
     rooms.forEach((r,i)=>{const[base,motif]=wp[(fi+i)%4];
+      const left=r.x1<CORE_L, cx=(r.x1+r.x2)/2;
       wallpaper(r.x1,t,r.x2,y,base,motif);
       (i%2?floorBoards:carpet)(r.x1,r.x2,y,i%2?'#a8794a':'#7d5d70');
-      windowFrameReg((r.x1+r.x2)/2-20,t+12,40,40,'#7a5433');
-      bed(r.bedX-20,y); sideTable(r.bedX+36,y); tblLamp(r.bedX+36,y);
-      wardrobe(r.x1<CORE_L?r.x2-34:r.x1+8,y);
-      if(r.x1<CORE_L)bathNook(r.x1+4,y); else {bathNook(r.x1+38,y); radiator(r.x2-28,y);}
-      painting(r.bedX-14,t+16,22,16,pick(['#87a07c','#6b7f9c','#b08a6a']));
-      if(r.suite){sofa(r.deskX-10,y,40,'#557a8a'); plant(r.x1<CORE_L?r.x1+10:r.x2-24,y);}else chair(r.deskX,y,1);
-      doorFrame(r.x1<CORE_L?r.x2-8:r.x1+8,y);
-      g.fillStyle='#5a4326';g.font='bold 8px Georgia';g.fillText(r.id,r.x1<CORE_L?r.x2-8:r.x1+8,y-38);
-      if(rooms.indexOf(r)===0||rooms.indexOf(r)===2){} });
+      windowFrameReg(cx-20,t+12,40,40,'#7a5433');
+      pendantLamp(left?cx+44:cx-44,t,12);                 // ceiling lamp
+      bed(r.bedX-20,y);
+      sideTable(left?r.bedX+36:r.bedX-36,y); tblLamp(left?r.bedX+36:r.bedX-36,y);
+      wardrobe(left?r.x2-56:r.x1+30,y);
+      bathNook(left?r.x1+4:r.x2-30,y);                    // shower at the far end of the room
+      painting(left?r.bedX-24:r.bedX+36,t+16,22,16,pick(['#87a07c','#6b7f9c','#b08a6a']));
+      if(r.suite)sofa(r.deskX-10,y,40,'#557a8a');
+      else if(r.x2-r.x1>190)chair(r.deskX,y,1);
+      const doorX=left?r.x2-12:r.x1+12;
+      aptDoorway(doorX,fi,22,41);                         // animated, 20% taller than before
+      g.fillStyle='#5a4326';g.font='bold 8px Georgia';g.fillText(r.id,doorX,y-53); });
     partition(520,t,y); partition(990,t,y);
   }
   // --- Apartment floors F4,F5 ---
@@ -487,26 +493,26 @@ function buildStatic(){
    wallpaper(802,t,1194,y,'#bcc8b4','stripe'); floorBoards(802,1194,y);
    windowFrameReg(940,t+12,40,40,'#5f7a44'); windowFrameReg(1080,t+12,40,40,'#5f7a44');
    aptDoorway(814,5); deskTypewriter(APTS[1].deskX-10,y); deskLamp(APTS[1].deskX+21,y); bookshelf(910,y,46); bookshelf(940,y,46);
-   sofa(1000,y,46,'#8a4a3c'); bathNook(1054,y); bed(APTS[1].bedX-24,y,48); sideTable(1104,y); tblLamp(1104,y,true);
+   sofa(1000,y,46,'#8a4a3c'); sideTable(1078,y); tblLamp(1078,y,true); bed(APTS[1].bedX-24,y,48); bathNook(1160,y);
    pendantLamp(1000,t,14); painting(1000,t+16,24,16,'#87a07c'); rug(980,y,110);
    g.fillStyle='#5a4326';g.fillText('APT 4B',1170,t+14);
   }
   {const t=F[6].top,y=F[6].y; // 5A Agnes / PH Dr Cross
    wallpaper(306,t,698,y,'#e8c9c0','dot'); carpet(306,698,y,'#8e5a70');
    windowFrameReg(400,t+12,40,40,'#9c4a5a'); windowFrameReg(520,t+12,40,40,'#9c4a5a');
-   aptDoorway(686,6); bathNook(544,y);
+   aptDoorway(686,6); bathNook(306,y);
    bed(APTS[2].bedX-20,y); sideTable(APTS[2].bedX+34,y); tblLamp(APTS[2].bedX+34,y,true);
    pendantLamp(470,t,14); deskLamp(516,y);
    pianoStatic(580,y,false); sofa(450,y,44,'#7a4a6b'); table(506,y,30);
-   plant(320,y); plant(660,y); painting(470,t+16,22,16,'#6b7f9c'); rug(440,y,120,'#8e5a70');
+   plant(545,y); plant(660,y); painting(470,t+16,22,16,'#6b7f9c'); rug(440,y,120,'#8e5a70');
    fr(g,636,y-22,16,10,'#b8a890'); // cat basket
    g.fillStyle='#5a4326';g.font='bold 8px Georgia';g.fillText('APT 5A',330,t+14);
    wallpaper(802,t,1194,y,'#c8ccd8','stripe'); floorBoards(802,1194,y,'#8a6a48');
    windowFrameReg(880,t+12,44,42,'#4a5a7a'); windowFrameReg(1020,t+12,44,42,'#4a5a7a'); windowFrameReg(1120,t+12,44,42,'#4a5a7a');
-   aptDoorway(814,6); bathNook(886,y);
+   aptDoorway(814,6); bathNook(1160,y);
    bed(APTS[3].bedX-24,y,50); sofa(920,y,52,'#41597a'); tvSet(990,y); barCounter(830,y,54);
-   pendantLamp(950,t,14); pendantLamp(1090,t,14); sideTable(APTS[3].bedX+30,y); tblLamp(APTS[3].bedX+30,y,true);
-   bookshelf(1060,y,44); plant(1100,y); painting(940,t+16,28,18,'#6b7f9c'); rug(900,y,150,'#41597a');
+   pendantLamp(950,t,14); pendantLamp(1090,t,14); sideTable(1064,y); tblLamp(1064,y,true);
+   bookshelf(886,y,44); plant(1030,y); painting(940,t+16,28,18,'#6b7f9c'); rug(900,y,150,'#41597a');
    g.fillStyle='#5a4326';g.fillText('PENTHOUSE',1150,t+14);
   }
   // --- core: lift shaft & stairs, every floor ---
@@ -535,6 +541,9 @@ function buildStatic(){
     // sunburst medallion on the half-landing wall
     g.strokeStyle='#c9a24a'; g.lineWidth=1;
     for(let a=-2.6;a<=-0.5;a+=0.42){g.beginPath();g.moveTo(778,ym-20);g.lineTo(778+Math.cos(a)*8,ym-20+Math.sin(a)*8);g.stroke();}
+    // dim brass wall sconce on each half landing
+    fr(g,763,ym-33,8,2.5,'#c9a24a');
+    DECOR_LAMPS.push({x:767,y:ym-34,r:18,a:0.5});
     // flights: lower runs right→left up to the half landing, upper runs back
     const flight=(x0,y0,x1,y1)=>{const n=7;
       for(let i=0;i<=n;i++){const sx=lerp(x0,x1,i/n), sy=lerp(y0,y1,i/n);
@@ -652,13 +661,19 @@ function makePerson(o){const p=Object.assign({
  people.push(p); return p;}
 
 function footY(p){ if(p.floor==='street')return STREET;
+  if(p.floor==='lift')return lift.y;
   if(p.climbY!==null)return p.climbY;
   return typeof p.floor==='number'?FLOORS[p.floor].y:STREET; }
 
 function routeTo(p,floor,x,pose){
   p.queue=[]; p.pose=pose||'stand'; p.sleeping=false;
+  if(p.floor==='lift'){ // pulled out of the cab by a change of plans
+    lift.riders=lift.riders.filter(r=>r.p!==p); p.floor=lift.fl; p.x=766; p.climbY=null;}
   const q=p.queue;
   const inside=typeof p.floor==='number';
+  // half the building takes the lift, the other half the stairs
+  const travel=to=>{ if(!fx.liftBroken&&Math.random()<0.5) q.push({t:'walk',x:770},{t:'lift',to});
+    else q.push({t:'walk',x:STAIRX},{t:'climb',to}); };
   if(p.floor===null){ // out of scene → re-enter from a street edge
     p.floor='street'; p.x=Math.random()<0.7?-50:W+50;
     if(p.x>W) p.x=W+50;
@@ -667,19 +682,19 @@ function routeTo(p,floor,x,pose){
     if(floor==='street'||floor==='out'){ q.push({t:'walk',x:floor==='out'?(p.x<W/2?-70:W+70):x});
       if(floor==='out')q.push({t:'gone'}); p.state='walk'; return;}
     q.push({t:'walk',x:DOOR_OUT},{t:'door',dir:'in'});
-    if(floor!==1)q.push({t:'walk',x:STAIRX},{t:'climb',to:floor});
+    if(floor!==1)travel(floor);
     q.push({t:'walk',x}); p.state='walk'; return;
   }
   if(inside){
     if(floor==='street'||floor==='out'){
-      if(p.floor!==1)q.push({t:'walk',x:STAIRX},{t:'climb',to:1});
+      if(p.floor!==1)travel(1);
       q.push({t:'walk',x:DOOR_IN},{t:'door',dir:'out'});
       q.push({t:'walk',x:floor==='out'?(Math.random()<0.7?-70:W+70):x});
       if(floor==='out')q.push({t:'gone'});
       p.state='walk'; return;
     }
     if(floor===p.floor){q.push({t:'walk',x}); p.state='walk'; return;}
-    q.push({t:'walk',x:STAIRX},{t:'climb',to:floor},{t:'walk',x});
+    travel(floor); q.push({t:'walk',x});
     p.state='walk'; return;
   }
 }
@@ -703,6 +718,30 @@ function updatePerson(p,dt,wm){
       if(q[0].dir==='in'){p.floor=1;p.x=DOOR_IN;} else {p.floor='street';p.x=DOOR_OUT;}
       q.shift();
     }
+    if(q.length&&q[0].t==='lift'){
+      const st=q[0];
+      if(st.phase===undefined)st.phase='wait';
+      if(st.phase==='wait'){
+        p.dir=-1; // face the lift doors
+        if(fx.liftBroken){q.shift(); q.unshift({t:'walk',x:STAIRX},{t:'climb',to:st.to});}
+        else if(lift.fl===p.floor&&lift.state==='open'&&lift.door>0.85&&lift.riders.length<4)st.phase='board';
+      }
+      else if(st.phase==='board'){
+        const tx=722+lift.riders.length*9, spd=p.speed*wm*dt, dd=tx-p.x;
+        if(Math.abs(dd)<=spd){p.x=tx; p.floor='lift'; lift.riders.push({p,to:st.to}); st.phase='ride'; lift.hold=Math.max(lift.hold,0.6);}
+        else{p.x+=Math.sign(dd)*spd; p.dir=Math.sign(dd)||p.dir;}
+      }
+      else if(st.phase==='ride'){
+        if(lift.state==='broken'&&lift.door>0.85){ // lift died mid-trip: step out, take the stairs
+          lift.riders=lift.riders.filter(r=>r.p!==p);
+          p.floor=lift.fl; p.x=766; q.shift();
+          if(lift.fl!==st.to)q.unshift({t:'walk',x:STAIRX},{t:'climb',to:st.to});
+        } else if(lift.state==='open'&&lift.fl===st.to&&lift.door>0.85){
+          lift.riders=lift.riders.filter(r=>r.p!==p);
+          p.floor=st.to; q.shift(); lift.hold=Math.max(lift.hold,0.8); p.dir=1;
+        }
+      }
+    }
     if(q.length&&q[0].t==='climb'){
       const st=q[0];
       if(st.from===undefined){st.from=p.floor;st.prog=0;p.x=STAIRX;}
@@ -723,6 +762,7 @@ function updatePerson(p,dt,wm){
     if(q.length&&q[0].t==='gone'){p.floor=null;p.state='out';q.shift();return;}
     if(!q.length){p.state=p.pose;
       if(p.pose==='sleep'){p.sleeping=true;}
+      if(p.pose==='play')p.dir=1;   // face the keyboard, not the room
     }
   }
   // swing apartment doors open as anyone passes through the doorway
@@ -777,7 +817,7 @@ function drawPerson(p,time){
 }
 // ============================== THE CAST ==============================
 const LOC={desk:[1,500],deskBack:[1,480],door:[1,330],cafe1:[1,806],cafe2:[1,862],cafeServe:[1,946],kitchen:[1,1095],
- piano:[2,590],ball1:[2,368],ball2:[2,438],dance:[2,520],bar:[2,858],lounge:[2,955],
+ piano:[2,594],ball1:[2,368],ball2:[2,438],dance:[2,520],bar:[2,858],lounge:[2,955],
  boiler:[0,414],laundry:[0,600],bench:[0,840],cot:[0,1150]};
 function mk(job,name,role,wage,opts){const p=makePerson(Object.assign({name,role,kind:'staff',wage,meta:{job}},opts));return p;}
 const STAFF=[
@@ -958,7 +998,7 @@ function planGuest(p,h,day,dtg){
   else if(h<m.outH)setAct(p,'lounge'+day,r.fl,r.deskX+m.off,'stand','in Room '+r.id);
   else if(h<m.retH)setAct(p,'town'+day,'out',0,'stand','out seeing the town');
   else if(h<19.6)setAct(p,'rest'+day,r.fl,r.bedX+m.off,'stand','back in Room '+r.id);
-  else if(h<21.4&&m.dineBall)setAct(p,'dine'+day,2,pick([360,376,430,446])+m.off,'sit','dining in the ballroom');
+  else if(h<21.4&&m.dineBall)setAct(p,'dine'+day,2,pick([314,360,376,430,446])+m.off,'sit','dining in the ballroom');
   else if(h<21.6&&!m.dineBall)setAct(p,'supper'+day,1,844+m.off,'sit','a light supper in the café');
   else setAct(p,'evening'+day,2,pick([520,548])+m.off,'dance','dancing in the ballroom');
 }
@@ -990,7 +1030,7 @@ function spawnVisitor(h){
     meta:{job:'visitor',leaveAt:tMin+ri(40,75),paid:{}}});
   if(social){p.meta.dest=[host.floor,host.x+ri(-30,30)];p.statusText='calling on '+host.name;
     logEvent(p.name+' is calling on '+host.name+'.');}
-  else{const spot=h>=18?[2,pick([368,430,446])]:[1,pick([806,844,862,900,916])];p.meta.dest=spot;p.meta.dine=true;
+  else{const spot=h>=18?[2,pick([314,368,430,446])]:[1,pick([806,844,862,900,916])];p.meta.dest=spot;p.meta.dine=true;
     p.statusText=h>=18?'dining in the ballroom':'in the café';}
   p.act=h>=18?'dine':'coffee'; routeTo(p,p.meta.dest[0],p.meta.dest[1],social?'stand':'sit');
 }
@@ -1089,7 +1129,53 @@ function economyTick(){
 }
 // ============================== RENDER ==============================
 const darkCv=document.createElement('canvas'); darkCv.width=W; darkCv.height=H; const dctx=darkCv.getContext('2d');
-let liftY=FLOORS[1].y, liftTarget=3, liftPause=0;
+// ---- the lift: waits for callers, carries them to their floor ----
+const lift={fl:1,y:FLOORS[1].y,door:0,state:'idle',target:1,hold:0,riders:[]};
+function liftBusy(){return people.some(p=>p.queue[0]&&p.queue[0].t==='lift'&&p.queue[0].phase==='board');}
+function updateLift(dt){
+  if(fx.liftBroken){
+    if(lift.state!=='broken'){ // stall at the nearest floor and let everyone out
+      let bi=1,bd=1e9; for(let i=0;i<7;i++){const d=Math.abs(FLOORS[i].y-lift.y); if(d<bd){bd=d;bi=i;}}
+      lift.fl=bi; lift.y=FLOORS[bi].y; lift.state='broken';}
+    lift.door=Math.min(1,lift.door+dt*2.2);
+    return;
+  }
+  if(lift.state==='broken'){lift.state='idle';lift.door=0;}
+  const calls=new Set();
+  for(const p of people)if(typeof p.floor==='number'&&p.queue[0]&&p.queue[0].t==='lift'&&p.queue[0].phase==='wait')calls.add(p.floor);
+  for(const r of lift.riders)calls.add(r.to);
+  const next=()=>{let best=null,bd=99;
+    for(const f of calls){if(f===lift.fl)continue; const d=Math.abs(f-lift.fl); if(d<bd){bd=d;best=f;}}
+    return best;};
+  switch(lift.state){
+    case 'idle':{
+      lift.door=Math.max(0,lift.door-dt*2.2);
+      if(calls.has(lift.fl)){lift.state='open'; lift.hold=1.2;}
+      else{const b=next(); if(b!=null&&lift.door<=0){lift.target=b; lift.state='moving';}}
+      break;}
+    case 'open':{
+      lift.door=Math.min(1,lift.door+dt*2.2);
+      lift.hold-=dt;
+      if(lift.door>=1&&lift.hold<=0&&!liftBusy()){
+        const b=next();
+        if(b!=null){lift.target=b; lift.state='closing';}
+        else if(!calls.has(lift.fl))lift.state='idle';
+        else lift.hold=0.5;  // hold the doors for whoever's coming
+      }
+      break;}
+    case 'closing':{
+      if(liftBusy()){lift.state='open'; lift.hold=0.6; break;}   // someone's stepping in
+      lift.door-=dt*2.2;
+      if(lift.door<=0){lift.door=0; lift.state='moving';}
+      break;}
+    case 'moving':{
+      const ty=FLOORS[lift.target].y, d=ty-lift.y, sp=dt*70*(1+speedIdx*0.6);
+      if(Math.abs(d)<=sp){lift.y=ty; lift.fl=lift.target; lift.state='open'; lift.hold=1.4;}
+      else lift.y+=Math.sign(d)*sp;
+      break;}
+  }
+  lift.riders.forEach((r,i)=>{r.p.x=722+i*9;}); // riders stand in the cab
+}
 const cat={x:600,tx:600,t:0,sit:true};
 const pigeons=[{x:560,o:0},{x:700,o:1.7},{x:880,o:3.1}];
 
@@ -1148,18 +1234,18 @@ function render(time){
     ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(wn.x,wn.y+wn.h/2);ctx.lineTo(wn.x+wn.w,wn.y+wn.h/2);ctx.moveTo(wn.x+wn.w/2,wn.y);ctx.lineTo(wn.x+wn.w/2,wn.y+wn.h);ctx.stroke();
     ctx.fillStyle=wn.curt; ctx.fillRect(wn.x-5,wn.y-3,6,wn.h+6); ctx.fillRect(wn.x+wn.w-1,wn.y-3,6,wn.h+6);
     ctx.fillRect(wn.x-6,wn.y-5,wn.w+12,4);}
-  // lift cab
-  {const cabH=54;
-   if(!fx.liftBroken){ if(liftPause>0)liftPause-=0.016; else{
-      const ty=FLOORS[liftTarget].y; const d=ty-liftY;
-      if(Math.abs(d)<1){liftY=ty;liftTarget=ri(1,6);liftPause=rnd(2,5);} else liftY+=Math.sign(d)*30*0.016*(1+speedIdx);}}
-   ctx.fillStyle='#4a4038'; ctx.fillRect(LIFT_L+6,liftY-cabH,LIFT_R-LIFT_L-12,cabH);
-   ctx.fillStyle='#6a5c4a'; ctx.fillRect(LIFT_L+8,liftY-cabH+3,LIFT_R-LIFT_L-16,8);
-   ctx.strokeStyle='#8a7a62';ctx.lineWidth=1.2;
-   for(let x=LIFT_L+9;x<LIFT_R-8;x+=5){ctx.beginPath();ctx.moveTo(x,liftY-cabH+13);ctx.lineTo(x,liftY-2);ctx.stroke();}
-   ctx.strokeStyle='#2a2622';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo((LIFT_L+LIFT_R)/2,liftY-cabH);ctx.lineTo((LIFT_L+LIFT_R)/2,FLOORS[6].top);ctx.stroke();
-   if(fx.liftBroken){ctx.fillStyle=Math.sin(time*5)>0?'#c83a2a':'#5a1a12';ctx.beginPath();ctx.arc((LIFT_L+LIFT_R)/2,liftY-cabH-8,4,0,7);ctx.fill();
-     ctx.fillStyle='#e8d7ae';ctx.font='bold 8px Georgia';ctx.textAlign='center';ctx.fillText('OUT OF ORDER',(LIFT_L+LIFT_R)/2,FLOORS[1].y-46);}}
+  // lift cab interior (sliding doors are drawn after the people, so riders show inside)
+  {const cabH=58, cl=LIFT_L+5, cw=LIFT_R-LIFT_L-10;
+   ctx.strokeStyle='#2a2622';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(730,lift.y-cabH);ctx.lineTo(730,FLOORS[6].top);ctx.stroke();
+   ctx.fillStyle='#5a4a36'; ctx.fillRect(cl,lift.y-cabH,cw,cabH);
+   ctx.fillStyle='#6e5c44'; ctx.fillRect(cl+2,lift.y-cabH+2,cw-4,cabH-4);
+   ctx.fillStyle='#3c2c1a'; ctx.fillRect(cl,lift.y-4,cw,4);
+   // the glowing lamp inside the cab
+   ctx.fillStyle='rgba(255,232,170,.95)'; ctx.fillRect(722,lift.y-cabH+4,16,3.5);
+   ctx.save();ctx.globalCompositeOperation='lighter';
+   const lg=ctx.createRadialGradient(730,lift.y-cabH+8,2,730,lift.y-cabH+8,34);
+   lg.addColorStop(0,'rgba(255,210,130,.45)');lg.addColorStop(1,'rgba(255,210,130,0)');
+   ctx.fillStyle=lg;ctx.beginPath();ctx.arc(730,lift.y-cabH+8,34,0,7);ctx.fill();ctx.restore();}
   // apartment door leaves swing open and shut
   for(const d of DOORS){d.hold=Math.max(0,d.hold-0.016);
     const tgt=d.hold>0?1:0; d.open+=(tgt-d.open)*0.14;
@@ -1180,6 +1266,15 @@ function render(time){
     if(Math.random()<0.008)puff(p.x-14,y-22,'note','z');}
   // people
   for(const p of people)drawPerson(p,time);
+  // lift doors slide shut over the riders
+  {const cabH=58, cl=LIFT_L+5, cw=LIFT_R-LIFT_L-10, pw=cw/2*(1-lift.door);
+   ctx.fillStyle='#4a4038';
+   if(pw>0.5){ctx.fillRect(cl,lift.y-cabH,pw,cabH); ctx.fillRect(cl+cw-pw,lift.y-cabH,pw,cabH);
+     ctx.strokeStyle='#8a7a62'; ctx.lineWidth=1;
+     if(pw>3){ctx.strokeRect(cl+1.5,lift.y-cabH+2,pw-3,cabH-4); ctx.strokeRect(cl+cw-pw+1.5,lift.y-cabH+2,pw-3,cabH-4);}}
+   ctx.strokeStyle='#8a7a62'; ctx.lineWidth=1.5; ctx.strokeRect(cl,lift.y-cabH,cw,cabH);
+   if(fx.liftBroken){ctx.fillStyle=Math.sin(time*5)>0?'#c83a2a':'#5a1a12';ctx.beginPath();ctx.arc(730,lift.y-cabH-8,4,0,7);ctx.fill();
+     ctx.fillStyle='#e8d7ae';ctx.font='bold 8px Georgia';ctx.textAlign='center';ctx.fillText('OUT OF ORDER',730,FLOORS[1].y-52);}}
   // reception counter re-drawn over people, so staff stand BEHIND the desk
   {const y=FLOORS[1].y;
    ctx.fillStyle='#3c2415'; ctx.fillRect(470,y-24,66,6);
@@ -1217,7 +1312,11 @@ function drawAmbient(time,h,dk,day){
   // fireplaces (lobby + lounge) burn from 15h and all night
   if(h>15||h<7||dk>0.2){for(const[fx_,fy] of[[346,F[1].y],[1146,F[2].y]]){
     for(let i=0;i<3;i++){ctx.fillStyle=pick(['#ff9b3a','#ffcf5a','#e8552a']);
-      ctx.beginPath();ctx.arc(fx_+rnd(-7,7),fy-6-rnd(0,9),rnd(2,4),0,7);ctx.fill();}}}
+      ctx.beginPath();ctx.arc(fx_+rnd(-7,7),fy-6-rnd(0,9),rnd(2,4),0,7);ctx.fill();}}
+    // candle on the lounge side table, guttering gently
+    const cy=F[2].y-23+Math.sin(time*11)*0.6;
+    ctx.fillStyle='#ffcf5a'; ctx.beginPath(); ctx.ellipse(1106,cy,1.4,3.2,0,0,7); ctx.fill();
+    ctx.fillStyle='#ff9b3a'; ctx.beginPath(); ctx.ellipse(1106,cy+1,0.8,1.6,0,0,7); ctx.fill();}
   // televisions flicker at night when someone is near
   if(dk>0.25){for(const tv of[[512,F[5].y],[1002,F[6].y]]){
     if(people.some(p=>p.floor===(tv[1]===F[5].y?5:6)&&Math.abs(p.x-tv[0])<90&&!p.sleeping)){
@@ -1253,7 +1352,7 @@ function drawAmbient(time,h,dk,day){
   if(nf>0.02){ctx.save();ctx.globalCompositeOperation='lighter';
     for(const L of DECOR_LAMPS){
       const rg=ctx.createRadialGradient(L.x,L.y,1,L.x,L.y,L.r*0.55);
-      rg.addColorStop(0,'rgba(255,205,120,'+(0.5*nf)+')');rg.addColorStop(1,'rgba(255,205,120,0)');
+      rg.addColorStop(0,'rgba(255,205,120,'+((L.a||1)*0.5*nf)+')');rg.addColorStop(1,'rgba(255,205,120,0)');
       ctx.fillStyle=rg;ctx.beginPath();ctx.arc(L.x,L.y,L.r*0.55,0,7);ctx.fill();
       ctx.fillStyle='rgba(255,238,190,'+(0.85*nf)+')';ctx.beginPath();ctx.arc(L.x,L.y,1.6,0,7);ctx.fill();}
     ctx.restore();}
@@ -1307,7 +1406,9 @@ function drawLighting(h,dk,time,day){
   if(people.some(p=>p.floor===1&&p.x>1010))light(1100,FLOORS[1].top+40,90);
   if(h>=17.5&&h<23.4)for(const bx of[380,520,640])light(bx,FLOORS[2].top+34,86); // ballroom chandeliers
   light(860,FLOORS[2].top+40,70);                               // lounge
-  for(let fi=0;fi<7;fi++)light(750,FLOORS[fi].top+30,34);       // stair core
+  light(730,lift.y-40,52);                                      // glowing lift cab
+  for(let fi=0;fi<6;fi++)light(770,(FLOORS[fi].y+FLOORS[fi+1].y)/2-26,24); // dim stairwell landings
+  if(h>15||h<7)light(1106,FLOORS[2].y-24,20);                   // lounge candle
   if(h>=17||h<6.25)for(const lx of STREETLAMPS)light(lx,STREET-88,72); // street lamps, on at 5pm
   for(const L of DECOR_LAMPS)light(L.x,L.y,L.r);                // miniature fittings
   light(BL-30,STREET-52,52);                                    // porch
@@ -1394,6 +1495,7 @@ function frame(now){
   const wm=speedIdx===0?0:clamp(1+SPEEDS[speedIdx]/9,1,5); // walk speed multiplier
   if(speedIdx>0){
     economyTick();
+    updateLift(dt);
     for(const p of people){
       if(p.kind==='staff')planStaff(p,h,day,gm);
       else if(p.kind==='tenant')planTenant(p,h,day,gm);
