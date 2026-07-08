@@ -25,6 +25,11 @@
   #register.collapsed h2::after{content:' ▸';}
   #register.collapsed details{display:none;}
   #register.collapsed{max-height:none;overflow:hidden;}
+  #regTab{display:none;position:fixed;top:12px;right:12px;z-index:40;cursor:pointer;user-select:none;
+    background:linear-gradient(180deg,#f6ecd4,#efe2c2);border:3px solid #6b4a2b;border-radius:8px;
+    box-shadow:0 4px 14px rgba(0,0,0,.5);color:#5c2e1c;font-size:13px;font-variant:small-caps;
+    letter-spacing:1px;font-weight:bold;padding:6px 12px;}
+  #regTab:hover{background:#f3e6c2;}
   details{margin:5px 0;} summary{cursor:pointer;font-weight:bold;font-variant:small-caps;letter-spacing:1px;color:#5c2e1c;font-size:13px;}
   table.reg{width:100%;border-collapse:collapse;margin-top:2px;}
   table.reg td{padding:1px 3px;vertical-align:top;border-bottom:1px dotted #cbb185;}
@@ -145,6 +150,7 @@
   <details open><summary>Day Book</summary><div id="logbox"></div></details>
 </div>
 <div id="tip"></div>
+<div id="regTab" title="Show the hotel register">📖 Register</div>
 
 <script>
 'use strict';
@@ -1510,8 +1516,9 @@ function updateUI(){
 // speed buttons
 for(let i=0;i<4;i++)$('spd'+i).onclick=()=>{speedIdx=i;
   for(let k=0;k<4;k++)$('spd'+k).classList.toggle('on',k===i);};
-// tap the register title to fold the whole panel away
-$('register').querySelector('h2').onclick=()=>$('register').classList.toggle('collapsed');
+// tap the register title to dismiss the panel; a little bookmark brings it back
+$('register').querySelector('h2').onclick=()=>{$('register').style.display='none';$('regTab').style.display='block';};
+$('regTab').onclick=()=>{$('register').style.display='block';$('regTab').style.display='none';};
 // hotel menu card
 $('menuBtn').onclick=()=>{const m=$('menuCard');m.style.display=m.style.display==='block'?'none':'block';};
 $('menuClose').onclick=()=>{$('menuCard').style.display='none';};
