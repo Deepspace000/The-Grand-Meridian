@@ -32,6 +32,32 @@
   #tip{position:fixed;pointer-events:none;background:#241708ee;color:#f6ecd4;border:1px solid #b99a68;border-radius:5px;
     padding:4px 8px;font-size:12px;display:none;z-index:50;white-space:nowrap;}
   #tip .r{color:#e0b96a;font-style:italic;} #tip .s{color:#9fc2e8;font-size:11px;}
+  /* ---- Bill of Fare ---- */
+  #menuCard{display:none;position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,92vw);
+    max-height:92vh;overflow-y:auto;z-index:60;padding:18px 26px 22px;
+    background:linear-gradient(180deg,#f9f1dc,#f1e3c2);border:3px solid #6b4a2b;border-radius:6px;
+    box-shadow:0 12px 48px rgba(0,0,0,.7), inset 0 0 0 6px #f9f1dc, inset 0 0 0 8px #b99a68, inset 0 0 60px rgba(120,80,30,.12);
+    color:#3a2a16;font-size:13px;}
+  #menuCard::-webkit-scrollbar{width:8px}#menuCard::-webkit-scrollbar-thumb{background:#b99a68;border-radius:4px}
+  #menuCard h2{margin:2px 0 0;text-align:center;font-size:22px;letter-spacing:4px;font-variant:small-caps;color:#5c2e1c;}
+  #menuCard .est{text-align:center;font-style:italic;color:#7a5a33;font-size:11.5px;margin-bottom:4px;}
+  #menuCard .rule{text-align:center;color:#b08a4a;letter-spacing:6px;margin:4px 0 8px;font-size:11px;}
+  .svc{border:1px solid #cbb185;border-radius:4px;padding:8px 12px 10px;margin:10px 0;position:relative;}
+  .svc h3{margin:0;text-align:center;font-variant:small-caps;letter-spacing:3px;font-size:15.5px;color:#5c2e1c;}
+  .svc .hours{text-align:center;font-style:italic;color:#7a5a33;font-size:11px;margin-bottom:6px;}
+  .svc.now{border:2px solid #8a5a28;background:rgba(216,180,90,.14);}
+  .svc .badge{display:none;position:absolute;top:-9px;right:10px;background:#8e3b32;color:#f6ecd4;font-size:9.5px;
+    letter-spacing:2px;padding:1px 8px;border-radius:3px;font-variant:small-caps;}
+  .svc.now .badge{display:block;}
+  .dish{display:flex;align-items:baseline;margin:2.5px 0;}
+  .dish .nm2{white-space:nowrap;}
+  .dish .dots{flex:1;border-bottom:1.5px dotted #b99a68;margin:0 6px;transform:translateY(-3px);}
+  .dish .pr{font-family:'Courier New',monospace;font-weight:bold;white-space:nowrap;}
+  .dish .note{font-style:italic;color:#7a5a33;font-size:11px;margin-left:6px;}
+  .setprice{text-align:center;font-size:11.5px;font-style:italic;color:#5c2e1c;margin-top:5px;}
+  #menuCard .foot{text-align:center;font-style:italic;color:#7a5a33;font-size:11px;margin-top:10px;}
+  #menuClose{position:absolute;top:8px;right:10px;cursor:pointer;font-size:16px;color:#6b4a2b;font-weight:bold;}
+  #menuClose:hover{color:#8e3b32;}
 </style>
 </head>
 <body>
@@ -45,7 +71,61 @@
   <div style="margin:7px 0 4px">
     <span class="btn" id="spd0">❚❚</span><span class="btn on" id="spd1">▶</span><span class="btn" id="spd2">▶▶</span><span class="btn" id="spd3">▶▶▶</span>
   </div>
+  <div style="margin:0 0 6px"><span class="btn" id="menuBtn">🍽 Bill of Fare</span></div>
   <div class="money" id="moneybox"></div>
+</div>
+
+<div class="panel" id="menuCard">
+  <span id="menuClose">✕</span>
+  <h2>Café Meridian</h2>
+  <div class="est">The Grand Meridian Hotel · est. 1927 · Rosa Marchetti, Head Chef</div>
+  <div class="rule">❦ ❦ ❦</div>
+
+  <div class="svc" id="svcBrek">
+    <span class="badge">now serving</span>
+    <h3>Breakfast</h3>
+    <div class="hours">served seven o'clock until half past ten</div>
+    <div class="dish"><span class="nm2">Porridge with cream &amp; brown sugar</span><span class="dots"></span><span class="pr">$4</span></div>
+    <div class="dish"><span class="nm2">Half grapefruit, glacé cherry</span><span class="dots"></span><span class="pr">$3</span></div>
+    <div class="dish"><span class="nm2">Two eggs any style, back bacon</span><span class="dots"></span><span class="pr">$7</span></div>
+    <div class="dish"><span class="nm2">Grilled kippers, parsley butter</span><span class="dots"></span><span class="pr">$6</span></div>
+    <div class="dish"><span class="nm2">Griddle cakes, maple syrup</span><span class="dots"></span><span class="pr">$5</span></div>
+    <div class="dish"><span class="nm2">Hot rolls, butter &amp; Seville marmalade</span><span class="dots"></span><span class="pr">$3</span></div>
+    <div class="setprice">Full hotel breakfast — the lot, with coffee or tea — $18</div>
+  </div>
+
+  <div class="svc" id="svcLunch">
+    <span class="badge">now serving</span>
+    <h3>Luncheon</h3>
+    <div class="hours">served noon until half past two</div>
+    <div class="dish"><span class="nm2">Consommé julienne</span><span class="dots"></span><span class="pr">$4</span></div>
+    <div class="dish"><span class="nm2">Potted shrimps, toast points</span><span class="dots"></span><span class="pr">$8</span></div>
+    <div class="dish"><span class="nm2">Welsh rarebit</span><span class="dots"></span><span class="pr">$7</span></div>
+    <div class="dish"><span class="nm2">Shepherd's pie, buttered greens</span><span class="dots"></span><span class="pr">$10</span></div>
+    <div class="dish"><span class="nm2">Cold roast beef, pickles &amp; new potatoes</span><span class="dots"></span><span class="pr">$11</span></div>
+    <div class="dish"><span class="nm2">Poached salmon mayonnaise</span><span class="dots"></span><span class="pr">$12</span></div>
+    <div class="dish"><span class="nm2">Steamed treacle pudding, custard</span><span class="dots"></span><span class="pr">$5</span></div>
+    <div class="setprice">Businessman's luncheon — soup, plat du jour &amp; pudding — $24</div>
+  </div>
+
+  <div class="svc" id="svcDinner">
+    <span class="badge">now serving</span>
+    <h3>Dinner</h3>
+    <div class="hours">served six o'clock until half past nine · in the ballroom · dress requested</div>
+    <div class="dish"><span class="nm2">Oysters on the half shell</span><span class="note">(half dozen)</span><span class="dots"></span><span class="pr">$9</span></div>
+    <div class="dish"><span class="nm2">Consommé or cream of celery</span><span class="dots"></span><span class="pr">$4</span></div>
+    <div class="dish"><span class="nm2">Fillet of sole Véronique</span><span class="dots"></span><span class="pr">$14</span></div>
+    <div class="dish"><span class="nm2">Roast pheasant, bread sauce &amp; game chips</span><span class="dots"></span><span class="pr">$18</span></div>
+    <div class="dish"><span class="nm2">Beef Wellington, madeira gravy</span><span class="dots"></span><span class="pr">$19</span></div>
+    <div class="dish"><span class="nm2">Peach Melba</span><span class="dots"></span><span class="pr">$6</span></div>
+    <div class="dish"><span class="nm2">Cheese board &amp; celery</span><span class="dots"></span><span class="pr">$5</span></div>
+    <div class="setprice">Table d'hôte — five courses, coffee to finish — $42</div>
+  </div>
+
+  <div class="rule">❦</div>
+  <div class="dish"><span class="nm2">Pot of tea or coffee, at any hour</span><span class="dots"></span><span class="pr">$9</span></div>
+  <div class="dish"><span class="nm2">Cocoa, before bed</span><span class="dots"></span><span class="pr">$4</span></div>
+  <div class="foot">Mr. Monty Keys plays the grand piano from six o'clock. · Residents may charge to their apartment account.</div>
 </div>
 
 <div class="panel" id="register">
@@ -150,7 +230,7 @@ const PRICES=[
  ['Apt 4A / 4B rent (weekly)','$395'],
  ['Apt 5A rent (weekly)','$520'],
  ['Penthouse rent (weekly)','$740'],
- ['Breakfast','$18'],['Table d\'hôte dinner','$42'],['Pot of tea / coffee','$9'],
+ ['Breakfast','$18'],['Businessman\'s luncheon','$24'],['Table d\'hôte dinner','$42'],['Pot of tea / coffee','$9'],
  ['Staff wages (daily total)','$1,360'],['Light, coal & water (per hour)','$10'],
 ];
 const floaters=[]; // {x,y,txt,col,t}
@@ -1127,10 +1207,19 @@ function updateUI(){
   $('visitorTbl').innerHTML=vis.length?vis.map(p=>row(p.name,p.role,p.statusText)).join('')
     :'<tr><td class="rl">Nobody calling at present.</td></tr>';
   $('logbox').innerHTML=eventLog.map(e=>'<div><b>D'+e.d+' '+e.c+'</b> — '+esc(e.txt)+'</div>').join('');
+  // bill of fare: highlight whichever service the kitchen is running right now
+  const hh=hourNow();
+  $('svcBrek').classList.toggle('now',hh>=7&&hh<10.5);
+  $('svcLunch').classList.toggle('now',hh>=12&&hh<14.5);
+  $('svcDinner').classList.toggle('now',hh>=18&&hh<21.5);
 }
 // speed buttons
 for(let i=0;i<4;i++)$('spd'+i).onclick=()=>{speedIdx=i;
   for(let k=0;k<4;k++)$('spd'+k).classList.toggle('on',k===i);};
+// bill of fare card
+$('menuBtn').onclick=()=>{const m=$('menuCard');m.style.display=m.style.display==='block'?'none':'block';};
+$('menuClose').onclick=()=>{$('menuCard').style.display='none';};
+addEventListener('keydown',e=>{if(e.key==='Escape')$('menuCard').style.display='none';});
 // tooltip
 const tip=$('tip');
 addEventListener('mousemove',e=>{
