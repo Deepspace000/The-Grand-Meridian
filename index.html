@@ -419,12 +419,12 @@ const ROOMS=[
 ROOMS.forEach(r=>{r.bedX = r.x1<CORE_L ? r.x1+62 : r.x2-66; r.deskX=r.x1<CORE_L? r.x2-52 : r.x1+84;
   r.guest=null; r.dirty=false; r.rate=r.ph?395:r.suite?259:189;});
 const APTS=[
- {id:'4A',fl:5,x1:306,x2:698,rent:395,bedX:358,deskX:640},
- {id:'4B',fl:5,x1:802,x2:1194,rent:395,bedX:1118,deskX:860},
- {id:'5A',fl:6,x1:306,x2:698,rent:520,bedX:358,deskX:600},
- {id:'5B',fl:6,x1:802,x2:1194,rent:740,bedX:1118,deskX:880},
- {id:'PH1',fl:7,x1:306,x2:698,rent:980,bedX:368,deskX:560},
- {id:'PH2',fl:7,x1:802,x2:1194,rent:980,bedX:1128,deskX:950},
+ {id:'4A',fl:5,x1:306,x2:698,rent:395,bedX:358,deskX:640,bathX:318},
+ {id:'4B',fl:5,x1:802,x2:1194,rent:395,bedX:1118,deskX:860,bathX:1172},
+ {id:'5A',fl:6,x1:306,x2:698,rent:520,bedX:358,deskX:600,bathX:318},
+ {id:'5B',fl:6,x1:802,x2:1194,rent:740,bedX:1118,deskX:880,bathX:1172},
+ {id:'PH1',fl:7,x1:306,x2:698,rent:980,bedX:368,deskX:560,bathX:324},
+ {id:'PH2',fl:7,x1:802,x2:1194,rent:980,bedX:1128,deskX:950,bathX:1176},
 ];
 const cleaningQueue=[];
 
@@ -1182,11 +1182,19 @@ function planStaff(p,h,day,dtg){
     break;}
   }
 }
+// stand someone under the shower (or in the tub) with the right splashes
+function washAt(p,id,fl,x,label,steam){
+  setAct(p,id,fl,x,'stand',label);
+  if(p.state==='stand'&&p.floor===fl&&Math.abs(p.x-x)<6){
+    if(steam){if(Math.random()<0.2)puff(p.x+rnd(-6,6),FLOORS[fl].y-30,'steam');}
+    else if(Math.random()<0.55)particles.push({x:p.x+rnd(-5,5),y:FLOORS[fl].y-36,vx:0,vy:120,t:0,life:0.32,kind:'drip'});}
+}
 function planTenant(p,h,day,dtg){
   const a=p.meta.apt, fl=a.fl;
   switch(p.meta.job){
    case 'babbage':{const o=p.meta.off/60;
     if(h>=22.4||h<7.6){setAct(p,'sleep',fl,a.bedX+(p.name[0]==='E'?8:0),'sleep','asleep');break;}
+    if(h>=22.05){washAt(p,'wash',fl,a.bathX+(p.meta.off?6:0),'a quick shower before bed');break;}
     if(h<9.9+o*0)setAct(p,'brek'+(day),fl,560+p.meta.off,'sit','breakfast at the apartment table');
     else if(h<11.4)setAct(p,'stroll','out',0,'stand','out for their morning constitutional');
     else if(h<15)setAct(p,'wireless',fl,445+p.meta.off,'sit','listening to the wireless');
@@ -1197,6 +1205,7 @@ function planTenant(p,h,day,dtg){
     break;}
    case 'theo':
     if(h>=1.2&&h<9.1){setAct(p,'sleep',fl,a.bedX,'sleep','asleep (writers’ hours)');break;}
+    if(h>=0.85&&h<1.2){washAt(p,'wash',fl,a.bathX,'a shower before bed');break;}
     if(h<10.8)setAct(p,'coffee',...LOC.cafe2,'sit','black coffee in the café');
     else if(h<14.6)setAct(p,'write',fl,a.deskX,'sit','hammering at the typewriter');
     else if(h<16)setAct(p,'walk','out',0,'stand','out walking, plotting chapter twelve');
@@ -1206,6 +1215,7 @@ function planTenant(p,h,day,dtg){
     break;
    case 'agnes':
     if(h>=21.6||h<7.9){setAct(p,'sleep',fl,a.bedX,'sleep','asleep');break;}
+    if(h>=21.25){washAt(p,'wash',fl,a.bathX,'a shower before bed');break;}
     if(h<8.7)setAct(p,'cat',fl,640,'stand','feeding Minim the cat');
     else if(h<10.2)setAct(p,'brek',...LOC.cafe1,'sit','porridge in the café');
     else if(h<13.9)setAct(p,'knit',fl,460,'sit','knitting by the window');
@@ -1216,6 +1226,7 @@ function planTenant(p,h,day,dtg){
     break;
    case 'zora':{
     if(h>=0.7&&h<9.7){setAct(p,'sleep',fl,a.bedX,'sleep','asleep — do not disturb before ten');break;}
+    if(h>=0.35&&h<0.7){washAt(p,'bath',fl,a.bathX,'a long soak in the tub before bed',true);break;}
     if(h<10.9)setAct(p,'brek',...LOC.cafe1,'sit','a very late breakfast in the café');
     else if(h<13)setAct(p,'toilette',fl,450,'stand','at her toilette');
     else if(h<15)setAct(p,'letters',fl,552,'sit','answering her admirers’ letters');
@@ -1228,6 +1239,7 @@ function planTenant(p,h,day,dtg){
     break;}
    case 'colonel':
     if(h>=22.1||h<6.4){setAct(p,'sleep',fl,a.bedX,'sleep','asleep — lights out at ten sharp');break;}
+    if(h>=21.75){washAt(p,'bath',fl,a.bathX,'his regulation cold bath');break;}
     if(h<7.2)setAct(p,'drill',fl,940,'stand','morning calisthenics');
     else if(h<8.2)setAct(p,'brek',...LOC.cafe2,'sit','kippers and strong tea in the café');
     else if(h<9.5)setAct(p,'paper',fl,950,'sit','the morning paper, cover to cover');
@@ -1243,7 +1255,8 @@ function planTenant(p,h,day,dtg){
     if(h<7.7)setAct(p,'ready',fl,900,'stand','dressing for the hospital');
     else if(h<19.4)setAct(p,'work','out',0,'stand','at St. Aldhelm’s Hospital');
     else if(h<20.4)setAct(p,'dinner',2,410,'sit','a late dinner in the ballroom');
-    else setAct(p,'unwind',fl,940,'sit','a nightcap in the penthouse');
+    else if(h<22.75)setAct(p,'unwind',fl,940,'sit','a nightcap after a long shift');
+    else washAt(p,'wash',fl,a.bathX,'a shower before bed');
     break;
   }
 }
@@ -1276,6 +1289,8 @@ function planGuest(p,h,day,dtg){
   if(day>=m.checkoutDay&&h>=9.6){ m.leaving=true; p.act='checkout'; p.statusText='settling the bill';
     routeTo(p,1,450+m.off,'stand');
     m.payAt=tMin+4; return; }
+  if(h>=m.sleepH-0.3&&h<m.sleepH){
+    washAt(p,'wash'+day,r.fl,(r.x1<CORE_L?r.x1+16:r.x2-18)+m.off*0.4,'a shower before bed');return;}
   if(h>=m.sleepH||h<m.brekH-0.4){setAct(p,'sleep',r.fl,r.bedX+m.off*0.5,'sleep','asleep in Room '+r.id);return;}
   if(h<m.brekH+1)setAct(p,'brek'+day,1,[806,900][m.off?1:0]+m.off,'sit','at breakfast in the café');
   else if(h<m.outH)setAct(p,'lounge'+day,r.fl,r.deskX+m.off,'stand','in Room '+r.id);
