@@ -23,6 +23,11 @@ rim, brick shell, and seven furnished floors of little people going about their 
   city windows that light up one by one, a rooftop neon sign that hums on, fireplaces,
   flickering televisions, and sleepers who become little blanket lumps.
 
+- **Seasons and weather**: one week per season on the hotel calendar. Fair days, overcast
+  spells, rain that sometimes sets in for hours, summer thunderstorms with lightning, and
+  winter snow that settles on the pavement, the parapet and the sign.
+
+![Seasons and weather](screenshots/weather.jpg)
 ![Dusk sequence](screenshots/dusk.jpg)
 ![Night at the Grand Meridian](screenshots/night.jpg)
 
