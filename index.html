@@ -20,7 +20,11 @@
   .btn.on{background:#6b4a2b;color:#f6ecd4;}
   #register{top:12px;right:12px;width:295px;max-height:calc(100vh - 24px);overflow-y:auto;padding:10px 12px;}
   #register::-webkit-scrollbar{width:8px}#register::-webkit-scrollbar-thumb{background:#b99a68;border-radius:4px}
-  #register h2{margin:2px 0 4px;font-size:14px;font-variant:small-caps;letter-spacing:2px;color:#5c2e1c;text-align:center;border-bottom:1px solid #b99a68;padding-bottom:3px;}
+  #register h2{margin:2px 0 4px;font-size:14px;font-variant:small-caps;letter-spacing:2px;color:#5c2e1c;text-align:center;border-bottom:1px solid #b99a68;padding-bottom:3px;cursor:pointer;user-select:none;}
+  #register h2::after{content:' ▾';font-size:11px;color:#7a5a33;}
+  #register.collapsed h2::after{content:' ▸';}
+  #register.collapsed details{display:none;}
+  #register.collapsed{max-height:none;overflow:hidden;}
   details{margin:5px 0;} summary{cursor:pointer;font-weight:bold;font-variant:small-caps;letter-spacing:1px;color:#5c2e1c;font-size:13px;}
   table.reg{width:100%;border-collapse:collapse;margin-top:2px;}
   table.reg td{padding:1px 3px;vertical-align:top;border-bottom:1px dotted #cbb185;}
@@ -1506,6 +1510,8 @@ function updateUI(){
 // speed buttons
 for(let i=0;i<4;i++)$('spd'+i).onclick=()=>{speedIdx=i;
   for(let k=0;k<4;k++)$('spd'+k).classList.toggle('on',k===i);};
+// tap the register title to fold the whole panel away
+$('register').querySelector('h2').onclick=()=>$('register').classList.toggle('collapsed');
 // hotel menu card
 $('menuBtn').onclick=()=>{const m=$('menuCard');m.style.display=m.style.display==='block'?'none':'block';};
 $('menuClose').onclick=()=>{$('menuCard').style.display='none';};
