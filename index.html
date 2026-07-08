@@ -241,7 +241,7 @@ const yearOf=day=>Math.floor((day-1)/28)+1;
 const dayOfSeason=day=>((day-1)%7)+1;
 const weather={type:'clear',intensity:0.1,until:0,wind:0,flash:0,nextBolt:0,boltPts:null,long:false};
 let snowCover=0;
-const RAIN=[]; for(let i=0;i<150;i++)RAIN.push({x:rnd(0,W),y:rnd(-H,STREET),spd:rnd(560,760),len:rnd(9,15)});
+const RAIN=[]; for(let i=0;i<230;i++)RAIN.push({x:rnd(0,W),y:rnd(-H,STREET),spd:rnd(560,780),len:rnd(13,24)});
 const SNOW=[]; for(let i=0;i<140;i++)SNOW.push({x:rnd(0,W),y:rnd(-H,STREET),spd:rnd(28,55),ph:rnd(0,7),r:rnd(1,2.4)});
 const CLOUD_TGT={clear:0.08,overcast:0.55,rain:0.78,snow:0.68,storm:1};
 function weatherMsg(type,winter,long){
@@ -299,12 +299,18 @@ function drawWeather(rain,snow,dk){
   ctx.beginPath();ctx.rect(0,0,W,H);ctx.rect(IL,FLOORS[6].top,IR-IL,FLOORS[0].y+8-FLOORS[6].top);
   ctx.clip('evenodd');
   if(rain>0){const n=Math.min(RAIN.length,Math.floor(RAIN.length*rain));
-    ctx.strokeStyle='rgba(178,198,222,'+(0.30+0.12*rain)+')';ctx.lineWidth=1.1;ctx.beginPath();
     for(let i=0;i<n;i++){const d=RAIN[i];
       d.y+=d.spd*0.016; d.x+=weather.wind*d.spd*0.016*0.35;
-      if(d.y>STREET+8){if(Math.random()<0.10)particles.push({x:d.x,y:STREET+1,vx:0,vy:0,t:0,life:0.25,kind:'splash'});
-        d.y=rnd(-80,-10); d.x=rnd(-60,W+60);}
+      if(d.y>STREET+8){if(Math.random()<0.16)particles.push({x:d.x,y:STREET+1,vx:0,vy:0,t:0,life:0.28,kind:'splash'});
+        d.y=rnd(-80,-10); d.x=rnd(-60,W+60);}}
+    // back sheet of finer rain, then a bolder foreground layer
+    ctx.strokeStyle='rgba(190,208,230,'+(0.34+0.14*rain)+')';ctx.lineWidth=1.2;ctx.beginPath();
+    for(let i=0;i<n;i++){const d=RAIN[i];
       ctx.moveTo(d.x,d.y);ctx.lineTo(d.x-weather.wind*d.len*0.35,d.y-d.len);}
+    ctx.stroke();
+    ctx.strokeStyle='rgba(215,230,248,'+(0.5+0.2*rain)+')';ctx.lineWidth=1.7;ctx.beginPath();
+    for(let i=0;i<n;i+=3){const d=RAIN[i];
+      ctx.moveTo(d.x+2,d.y);ctx.lineTo(d.x+2-weather.wind*d.len*0.4,d.y-d.len*1.25);}
     ctx.stroke();}
   if(snow>0){const n=Math.min(SNOW.length,Math.floor(SNOW.length*snow));
     ctx.fillStyle='rgba(240,246,252,0.85)';
