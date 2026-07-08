@@ -176,7 +176,9 @@ const FLOORS=[
   {name:'3rd Floor',   top:562, y:632},
   {name:'4th Floor',   top:484, y:554},
   {name:'5th Floor',   top:406, y:476},
+  {name:'Penthouse',   top:312, y:398},
 ];
+const TOPFL=7;
 const cv=document.getElementById('stage'), ctx=cv.getContext('2d');
 let scale=1, offX=0, offY=0;
 function resize(){ cv.width=innerWidth*devicePixelRatio; cv.height=innerHeight*devicePixelRatio;
@@ -296,7 +298,7 @@ function drawWeather(rain,snow,dk){
   if(weather.intensity>0.12){ctx.fillStyle='rgba(80,88,100,'+(0.20*weather.intensity)+')';ctx.fillRect(0,0,W,H);}
   if(rain<=0&&snow<=0)return;
   ctx.save();                                    // keep the rooms dry: clip out the interior
-  ctx.beginPath();ctx.rect(0,0,W,H);ctx.rect(IL,FLOORS[6].top,IR-IL,FLOORS[0].y+8-FLOORS[6].top);
+  ctx.beginPath();ctx.rect(0,0,W,H);ctx.rect(IL,FLOORS[TOPFL].top,IR-IL,FLOORS[0].y+8-FLOORS[TOPFL].top);
   ctx.clip('evenodd');
   if(rain>0){const n=Math.min(RAIN.length,Math.floor(RAIN.length*rain));
     for(let i=0;i<n;i++){const d=RAIN[i];
@@ -348,9 +350,10 @@ const money={balance:12400, todayRev:0, todayCost:0};
 const PRICES=[
  ['Standard room (per night)','$189'],
  ['Corner suite (per night)','$259'],
+ ['Penthouse suite (per night)','$395'],
  ['Apt 4A / 4B rent (weekly)','$395'],
  ['Apt 5A rent (weekly)','$520'],
- ['Penthouse rent (weekly)','$740'],
+ ['Apt 5B rent (weekly)','$740'],
  ['Breakfast','$18'],['Businessman\'s luncheon','$24'],['Table d\'hôte dinner','$42'],['Pot of tea / coffee','$9'],
  ['Staff wages (daily total)','$1,360'],['Light, coal & water (per hour)','$10'],
 ];
@@ -375,14 +378,15 @@ const ROOMS=[
  {id:'203',fl:3,x1:802,x2:988,suite:false},{id:'204',fl:3,x1:992,x2:1194,suite:true},
  {id:'301',fl:4,x1:306,x2:518,suite:false},{id:'302',fl:4,x1:522,x2:698,suite:false},
  {id:'303',fl:4,x1:802,x2:988,suite:false},{id:'304',fl:4,x1:992,x2:1194,suite:true},
+ {id:'PH1',fl:7,x1:306,x2:698,suite:true,ph:true},{id:'PH2',fl:7,x1:802,x2:1194,suite:true,ph:true},
 ];
 ROOMS.forEach(r=>{r.bedX = r.x1<CORE_L ? r.x1+62 : r.x2-66; r.deskX=r.x1<CORE_L? r.x2-52 : r.x1+84;
-  r.guest=null; r.dirty=false; r.rate=r.suite?259:189;});
+  r.guest=null; r.dirty=false; r.rate=r.ph?395:r.suite?259:189;});
 const APTS=[
  {id:'4A',fl:5,x1:306,x2:698,rent:395,bedX:358,deskX:640},
  {id:'4B',fl:5,x1:802,x2:1194,rent:395,bedX:1118,deskX:860},
  {id:'5A',fl:6,x1:306,x2:698,rent:520,bedX:358,deskX:600},
- {id:'PH',fl:6,x1:802,x2:1194,rent:740,bedX:1118,deskX:880},
+ {id:'5B',fl:6,x1:802,x2:1194,rent:740,bedX:1118,deskX:880},
 ];
 const cleaningQueue=[];
 
@@ -632,24 +636,48 @@ function buildStatic(){
    bed(APTS[3].bedX-24,y,50); sofa(920,y,52,'#41597a'); tvSet(990,y); barCounter(840,y,54);
    pendantLamp(950,t,14); pendantLamp(1090,t,14); sideTable(1064,y); tblLamp(1064,y,true);
    bookshelf(886,y,44); plant(1030,y); painting(940,t+16,28,18,'#6b7f9c'); rug(900,y,150,'#41597a');
-   g.fillStyle='#5a4326';g.fillText('PENTHOUSE',1150,t+14);
+   g.fillStyle='#5a4326';g.fillText('APT 5B',1170,t+14);
+  }
+  // --- Penthouse floor: two grand suites under the parapet ---
+  {const t=F[7].top,y=F[7].y;
+   // PH1
+   wallpaper(IL,t,698,y,'#e6dcc2','diamond'); carpet(IL,698,y,'#7a3b52');
+   fr(g,IL,t,698-IL,12,'#b39558'); g.fillStyle='rgba(255,255,255,.25)'; for(let x=IL+8;x<690;x+=22)g.fillRect(x,t+8,10,2); // gilt frieze
+   windowFrameReg(358,t+16,44,50,'#8a5a3c'); windowFrameReg(478,t+16,44,50,'#8a5a3c'); windowFrameReg(598,t+16,44,50,'#8a5a3c');
+   bathNook(310,y); aptDoorway(686,7,24,44);
+   bed(348,y); sideTable(404,y); tblLamp(404,y,true);
+   chandelier(500,t+14,false);
+   sofa(436,y,46,'#7a4a6b'); table(552,y,34); chair(544,y,1); chair(592,y,-1);
+   bookshelf(636,y,40); plant(614,y); painting(430,t+20,26,18,'#6b7f9c'); rug(420,y,170,'#7a3b52');
+   g.fillStyle='#5a4326';g.font='bold 8px Georgia';g.fillText('PH 1',686,y-53);
+   // PH2
+   wallpaper(802,t,IR,y,'#d8d2c4','stripe'); floorBoards(802,IR,y,'#8a6a48');
+   fr(g,802,t,IR-802,12,'#b39558'); for(let x=810;x<IR-8;x+=22)g.fillRect(x,t+8,10,2);
+   windowFrameReg(880,t+16,44,50,'#4a5a7a'); windowFrameReg(1000,t+16,44,50,'#4a5a7a'); windowFrameReg(1114,t+16,44,50,'#4a5a7a');
+   aptDoorway(816,7,24,44); wardrobe(848,y);
+   chandelier(1000,t+14,false);
+   barCounter(884,y,50); sofa(944,y,46,'#41597a');
+   bed(1108,y); sideTable(1092,y); tblLamp(1092,y,true);
+   bathNook(1164,y);
+   plant(1052,y); painting(960,t+20,26,18,'#87a07c'); rug(920,y,150,'#41597a');
+   g.fillStyle='#5a4326';g.fillText('PH 2',816,y-53);
   }
   // --- core: lift shaft & stairs, every floor ---
-  for(let fi=0;fi<7;fi++){const t=FLOORS[fi].top,y=FLOORS[fi].y;
+  for(let fi=0;fi<8;fi++){const t=FLOORS[fi].top,y=FLOORS[fi].y;
     fr(g,CORE_L,t,CORE_R-CORE_L,y-t,'#7a7264');
     fr(g,LIFT_L,t,LIFT_R-LIFT_L,y-t,'#2e2a26');                       // shaft
     g.strokeStyle='#4a443c';g.lineWidth=1.5; g.beginPath();g.moveTo(LIFT_L+8,t);g.lineTo(LIFT_L+8,y);g.moveTo(LIFT_R-8,t);g.lineTo(LIFT_R-8,y);g.stroke();
     fr(g,LIFT_L-3,t,3,y-t,'#5a5348'); fr(g,LIFT_R,t,3,y-t,'#5a5348');
-    g.fillStyle='#d8b45a'; g.font='bold 8px Georgia'; g.fillText(['B','G','M','2','3','4','5'][fi],LIFT_L-10,t+14);
+    g.fillStyle='#d8b45a'; g.font='bold 8px Georgia'; g.fillText(['B','G','M','2','3','4','5','P'][fi],LIFT_L-10,t+14);
     fr(g,CORE_R-4,t,4,y-t,'#8f8070'); fr(g,CORE_L-2,t,4,y-t,'#8f8070');
   }
   // core landing strips + thin slab shadow lines between floors
-  for(let fi=0;fi<7;fi++){const y=FLOORS[fi].y;
+  for(let fi=0;fi<8;fi++){const y=FLOORS[fi].y;
     fr(g,CORE_L,y,CORE_R-CORE_L,8,'#6e6a60');
     fr(g,BL,y,BR-BL,2,'rgba(40,28,14,.55)');}
   fr(g,BL,FLOORS[0].y+8,BR-BL,10,'#3f3122'); // foundation under basement
   // ---- art deco switchback staircase (drawn over the core) ----
-  for(let fi=0;fi<6;fi++){
+  for(let fi=0;fi<7;fi++){
     const yb=FLOORS[fi].y, yt=FLOORS[fi+1].y, ym=(yb+yt)/2;
     // two-tone deco stairwell wall with a gold chevron trim at the dado line
     fr(g,760,yt,36,(yb-yt)*0.52,'#a4906a'); fr(g,760,yt+(yb-yt)*0.52,36,(yb-yt)*0.48,'#6e5f46');
@@ -689,7 +717,7 @@ let holePath=null;
 function makeHolePath(){const p=new Path2D(); const pts=[];
   // wobbly ring just outside the interior; seeded wobble so it's stable
   let s=7; const wob=k=>{s=(s*16807)%2147483647; return ((s/2147483647)-0.5)*2*k;};
-  const topY=FLOORS[6].top-6, botY=FLOORS[0].y+14;
+  const topY=FLOORS[TOPFL].top-6, botY=FLOORS[0].y+14;
   for(let x=IL-6;x<=IR+6;x+=60)pts.push([x+wob(10),topY+wob(9)]);
   for(let y=topY;y<=botY;y+=56)pts.push([IR+7+wob(9),y+wob(10)]);
   for(let x=IR+6;x>=IL-6;x-=60)pts.push([x+wob(10),botY+wob(9)]);
@@ -718,9 +746,7 @@ function buildShell(){
   c.fillStyle='#7d3428'; c.fillRect(BL-12,TOPB-16,BR-BL+24,18);
   c.fillStyle='#b8a88c'; c.fillRect(BL-14,TOPB-20,BR-BL+28,6);
   for(let x=BL-8;x<BR+8;x+=44)c.fillRect(x,TOPB-14,20,4);
-  // attic windows on the top band
-  for(let x=BL+28;x<BR-40;x+=88){c.fillStyle='#b8a88c';c.fillRect(x-3,TOPB+22,42,54);
-    regExtWin(x,TOPB+26,36,46); }
+  // (the old attic window band is now the penthouse floor)
   // chimney
   c.fillStyle='#6e2a20'; c.fillRect(BR-90,TOPB-58,34,44); c.fillStyle='#b8a88c'; c.fillRect(BR-94,TOPB-62,42,7);
   // fire escape on right edge
@@ -869,9 +895,9 @@ function updatePerson(p,dt,wm){
       const t=clamp(st.prog,0,1);
       // continuous floor position; walk the switchback within each storey
       const f=lerp(st.from,st.to,t);
-      let i=Math.floor(f); if(i>5)i=5; if(i<0)i=0;
+      let i=Math.floor(f); if(i>TOPFL-1)i=TOPFL-1; if(i<0)i=0;
       const frac=clamp(f-i,0,1);
-      const yLo=FLOORS[i].y, yHi=FLOORS[Math.min(i+1,6)].y, ym=(yLo+yHi)/2;
+      const yLo=FLOORS[i].y, yHi=FLOORS[Math.min(i+1,TOPFL)].y, ym=(yLo+yHi)/2;
       let nx,ny;
       if(frac<0.5){nx=lerp(STAIR_R,STAIR_L,frac*2); ny=lerp(yLo,ym,frac*2);}   // lower flight
       else        {nx=lerp(STAIR_L,STAIR_R,(frac-0.5)*2); ny=lerp(ym,yHi,(frac-0.5)*2);} // upper flight
@@ -961,7 +987,7 @@ const TENANTS=[
  makePerson({name:'Edna Babbage',role:'Tenant · Apt 4A',kind:'tenant',shirt:'#8e5a70',dress:true,hat:'cloche',hatCol:'#5a3a4a',hair:'#d8cdb4',meta:{job:'babbage',apt:APTS[0],off:14}}),
  makePerson({name:'Theo Marsh',role:'Tenant · Apt 4B · novelist',kind:'tenant',shirt:'#4a5a4a',pants:'#3a3a30',hair:'#2a1c10',meta:{job:'theo',apt:APTS[1]}}),
  makePerson({name:'Miss Agnes Thornbury',role:'Tenant · Apt 5A · piano teacher (ret.)',kind:'tenant',shirt:'#7a4a6b',dress:true,hair:'#d8cdb4',meta:{job:'agnes',apt:APTS[2]}}),
- makePerson({name:'Dr. Vivian Cross',role:'Tenant · Penthouse · surgeon',kind:'tenant',shirt:'#41597a',dress:true,hair:'#1c1c1c',meta:{job:'vivian',apt:APTS[3]}}),
+ makePerson({name:'Dr. Vivian Cross',role:'Tenant · Apt 5B · surgeon',kind:'tenant',shirt:'#41597a',dress:true,hair:'#1c1c1c',meta:{job:'vivian',apt:APTS[3]}}),
 ];
 TENANTS.forEach(p=>{p.floor=p.meta.apt.fl; p.x=p.meta.apt.bedX; p.state='idle'; p.act='home';});
 STAFF.forEach(p=>{p.floor=null;p.state='out';});
@@ -1093,7 +1119,7 @@ function bookRoom(r){
     const fem=couple? i===1 : Math.random()<0.5;
     const title=couple?(i?'Mrs ':'Mr '):(fem?pick(['Miss ','Mrs ']):'Mr ');
     const p=makePerson({name:title+(couple?ln:pick(fem?FIRST_F:FIRST_M)+' '+ln),
-      kind:'guest',role:'Guest · Room '+r.id,dress:fem,shirt:pick(['#6a5a3a','#41597a','#5f7a44','#8e5a70','#7a4a3c','#4a5a7a']),
+      kind:'guest',role:'Guest · '+(r.suite?'Suite ':'Room ')+r.id,dress:fem,shirt:pick(['#6a5a3a','#41597a','#5f7a44','#8e5a70','#7a4a3c','#4a5a7a']),
       pants:'#3a3a30',hat:fem?(Math.random()<.6?'cloche':null):(Math.random()<.5?'bowler':null),hatCol:pick(['#5a3a4a','#3a4a5c']),
       meta:{job:'guest',room:r,nights,checkoutDay:dayNow()+nights,off:i*12,
         brekH:rnd(7.6,9.4),outH:rnd(10,12),retH:rnd(16.5,19),dineBall:Math.random()<0.55,sleepH:rnd(21.5,23.4),paid:{}}});
@@ -1258,7 +1284,7 @@ function liftBusy(){return people.some(p=>p.queue[0]&&p.queue[0].t==='lift'&&p.q
 function updateLift(dt){
   if(fx.liftBroken){
     if(lift.state!=='broken'){ // stall at the nearest floor and let everyone out
-      let bi=1,bd=1e9; for(let i=0;i<7;i++){const d=Math.abs(FLOORS[i].y-lift.y); if(d<bd){bd=d;bi=i;}}
+      let bi=1,bd=1e9; for(let i=0;i<8;i++){const d=Math.abs(FLOORS[i].y-lift.y); if(d<bd){bd=d;bi=i;}}
       lift.fl=bi; lift.y=FLOORS[bi].y; lift.state='broken';}
     lift.door=Math.min(1,lift.door+dt*2.2);
     return;
@@ -1368,7 +1394,7 @@ function render(time){
     ctx.fillRect(wn.x-6,wn.y-5,wn.w+12,4);}
   // lift cab interior (sliding doors are drawn after the people, so riders show inside)
   {const cabH=58, cl=LIFT_L+5, cw=LIFT_R-LIFT_L-10;
-   ctx.strokeStyle='#2a2622';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(730,lift.y-cabH);ctx.lineTo(730,FLOORS[6].top);ctx.stroke();
+   ctx.strokeStyle='#2a2622';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(730,lift.y-cabH);ctx.lineTo(730,FLOORS[TOPFL].top);ctx.stroke();
    ctx.fillStyle='#5a4a36'; ctx.fillRect(cl,lift.y-cabH,cw,cabH);
    ctx.fillStyle='#6e5c44'; ctx.fillRect(cl+2,lift.y-cabH+2,cw-4,cabH-4);
    ctx.fillStyle='#3c2c1a'; ctx.fillRect(cl,lift.y-4,cw,4);
@@ -1482,9 +1508,15 @@ function drawAmbient(time,h,dk,day){
     ctx.fillText('THE  GRAND  MERIDIAN',750,222);
     ctx.shadowBlur=6; ctx.fillStyle='rgba(255,240,200,'+(0.85*a)+')';
     ctx.fillText('THE  GRAND  MERIDIAN',750,222);ctx.restore();
-    // marquee bulbs along the bottom edge
-    for(let bx=444;bx<=1058;bx+=24){const tw=0.75+0.25*Math.sin(time*3+bx*0.7);
-      ctx.fillStyle='rgba(255,225,150,'+(a*tw)+')';ctx.beginPath();ctx.arc(bx,236,1.8,0,7);ctx.fill();}}
+    // marquee bulbs along the bottom edge, each with its own little halo
+    ctx.save();ctx.globalCompositeOperation='lighter';
+    for(let bx=444;bx<=1058;bx+=24){const tw=0.72+0.28*Math.sin(time*3+bx*0.7), ba=a*tw;
+      const bg2=ctx.createRadialGradient(bx,236,0.5,bx,236,8);
+      bg2.addColorStop(0,'rgba(255,225,150,'+(0.65*ba)+')');bg2.addColorStop(1,'rgba(255,225,150,0)');
+      ctx.fillStyle=bg2;ctx.beginPath();ctx.arc(bx,236,8,0,7);ctx.fill();}
+    ctx.restore();
+    for(let bx=444;bx<=1058;bx+=24){const tw=0.72+0.28*Math.sin(time*3+bx*0.7);
+      ctx.fillStyle='rgba(255,242,200,'+(a*tw)+')';ctx.beginPath();ctx.arc(bx,236,2,0,7);ctx.fill();}}
   drawSignBirds(dk);
   // street lanterns come on at five o'clock sharp
   const lampsOn=h>=17||h<6.25;
@@ -1589,7 +1621,7 @@ function drawLighting(h,dk,time,day){
   if(h>=17.5&&h<23.4)for(const bx of[380,520,640])light(bx,FLOORS[2].top+34,86); // ballroom chandeliers
   light(860,FLOORS[2].top+40,70);                               // lounge
   light(730,lift.y-40,52);                                      // glowing lift cab
-  for(let fi=0;fi<6;fi++)light(770,(FLOORS[fi].y+FLOORS[fi+1].y)/2-26,24); // dim stairwell landings
+  for(let fi=0;fi<7;fi++)light(770,(FLOORS[fi].y+FLOORS[fi+1].y)/2-26,24); // dim stairwell landings
   if(h>15||h<7)light(1106,FLOORS[2].y-24,20);                   // lounge candle
   if(h>=17||h<6.25)for(const lx of STREETLAMPS)light(lx,STREET-88,72); // street lamps, on at 5pm
   for(const L of DECOR_LAMPS)light(L.x,L.y,L.r);                // miniature fittings
