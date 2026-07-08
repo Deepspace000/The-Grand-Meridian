@@ -350,7 +350,7 @@ const money={balance:12400, todayRev:0, todayCost:0};
 const PRICES=[
  ['Standard room (per night)','$189'],
  ['Corner suite (per night)','$259'],
- ['Penthouse suite (per night)','$395'],
+ ['Penthouse suite rent (weekly)','$980'],
  ['Apt 4A / 4B rent (weekly)','$395'],
  ['Apt 5A rent (weekly)','$520'],
  ['Apt 5B rent (weekly)','$740'],
@@ -378,7 +378,6 @@ const ROOMS=[
  {id:'203',fl:3,x1:802,x2:988,suite:false},{id:'204',fl:3,x1:992,x2:1194,suite:true},
  {id:'301',fl:4,x1:306,x2:518,suite:false},{id:'302',fl:4,x1:522,x2:698,suite:false},
  {id:'303',fl:4,x1:802,x2:988,suite:false},{id:'304',fl:4,x1:992,x2:1194,suite:true},
- {id:'PH1',fl:7,x1:306,x2:698,suite:true,ph:true},{id:'PH2',fl:7,x1:802,x2:1194,suite:true,ph:true},
 ];
 ROOMS.forEach(r=>{r.bedX = r.x1<CORE_L ? r.x1+62 : r.x2-66; r.deskX=r.x1<CORE_L? r.x2-52 : r.x1+84;
   r.guest=null; r.dirty=false; r.rate=r.ph?395:r.suite?259:189;});
@@ -387,6 +386,8 @@ const APTS=[
  {id:'4B',fl:5,x1:802,x2:1194,rent:395,bedX:1118,deskX:860},
  {id:'5A',fl:6,x1:306,x2:698,rent:520,bedX:358,deskX:600},
  {id:'5B',fl:6,x1:802,x2:1194,rent:740,bedX:1118,deskX:880},
+ {id:'PH1',fl:7,x1:306,x2:698,rent:980,bedX:368,deskX:560},
+ {id:'PH2',fl:7,x1:802,x2:1194,rent:980,bedX:1128,deskX:950},
 ];
 const cleaningQueue=[];
 
@@ -988,6 +989,8 @@ const TENANTS=[
  makePerson({name:'Theo Marsh',role:'Tenant · Apt 4B · novelist',kind:'tenant',shirt:'#4a5a4a',pants:'#3a3a30',hair:'#2a1c10',meta:{job:'theo',apt:APTS[1]}}),
  makePerson({name:'Miss Agnes Thornbury',role:'Tenant · Apt 5A · piano teacher (ret.)',kind:'tenant',shirt:'#7a4a6b',dress:true,hair:'#d8cdb4',meta:{job:'agnes',apt:APTS[2]}}),
  makePerson({name:'Dr. Vivian Cross',role:'Tenant · Apt 5B · surgeon',kind:'tenant',shirt:'#41597a',dress:true,hair:'#1c1c1c',meta:{job:'vivian',apt:APTS[3]}}),
+ makePerson({name:'Madame Zora Petrova',role:'Resident · Suite PH1 · retired soprano',kind:'tenant',shirt:'#8e2f42',dress:true,hair:'#8a4a2a',hat:'cloche',hatCol:'#5a1f2e',meta:{job:'zora',apt:APTS[4]}}),
+ makePerson({name:'Col. Aubrey Fitzwilliam',role:'Resident · Suite PH2 · explorer (ret.)',kind:'tenant',shirt:'#6a5a3a',pants:'#4a4432',hat:'bowler',hair:'#d8cdb4',meta:{job:'colonel',apt:APTS[5]}}),
 ];
 TENANTS.forEach(p=>{p.floor=p.meta.apt.fl; p.x=p.meta.apt.bedX; p.state='idle'; p.act='home';});
 STAFF.forEach(p=>{p.floor=null;p.state='out';});
@@ -1100,6 +1103,30 @@ function planTenant(p,h,day,dtg){
     else if(h<16.6)setAct(p,'tea',2,930,'sit','tea and gossip in the lounge');
     else if(h<18.9)setAct(p,'letters',fl,512,'sit','writing letters');
     else setAct(p,'cocoa',fl,460,'sit','cocoa and the evening paper');
+    break;
+   case 'zora':{
+    if(h>=0.7&&h<9.7){setAct(p,'sleep',fl,a.bedX,'sleep','asleep — do not disturb before ten');break;}
+    if(h<10.9)setAct(p,'brek',...LOC.cafe1,'sit','a very late breakfast in the café');
+    else if(h<13)setAct(p,'toilette',fl,450,'stand','at her toilette');
+    else if(h<15)setAct(p,'letters',fl,552,'sit','answering her admirers’ letters');
+    else if(h<16.2){setAct(p,'sing',fl,480,'stand','vocal exercises — the whole hotel can hear');
+      if(p.state==='stand'&&Math.random()<0.06)puff(p.x+rnd(-8,8),FLOORS[fl].y-42,'note','♪');}
+    else if(h<17.5)setAct(p,'tea',2,930,'sit','holding forth over tea in the lounge');
+    else if(h<19.3)setAct(p,'rest',fl,442,'sit','resting her voice before the evening');
+    else if(h<22.3&&day%2===1)setAct(p,'court',2,376,'sit','holding court in the ballroom');
+    else setAct(p,'gramo',fl,460,'sit','a nightcap and gramophone records');
+    break;}
+   case 'colonel':
+    if(h>=22.1||h<6.4){setAct(p,'sleep',fl,a.bedX,'sleep','asleep — lights out at ten sharp');break;}
+    if(h<7.2)setAct(p,'drill',fl,940,'stand','morning calisthenics');
+    else if(h<8.2)setAct(p,'brek',...LOC.cafe2,'sit','kippers and strong tea in the café');
+    else if(h<9.5)setAct(p,'paper',fl,950,'sit','the morning paper, cover to cover');
+    else if(h<13.2)setAct(p,'club','out',0,'stand','at his club, telling tiger stories');
+    else if(h<15)setAct(p,'maps',fl,900,'stand','cataloguing his expedition maps');
+    else if(h<16.5)setAct(p,'stroll','out',0,'stand','a brisk turn around the park');
+    else if(h<18.5)setAct(p,'whisky',2,868,'stand','a whisky and soda at the lounge bar');
+    else if(h<20.3)setAct(p,'dine',2,430,'sit','dining in the ballroom');
+    else setAct(p,'pipe',fl,950,'sit','pipe and memoirs by the window');
     break;
    case 'vivian':
     if(h>=23.1||h<6.6){setAct(p,'sleep',fl,a.bedX,'sleep','asleep');break;}
@@ -1257,7 +1284,7 @@ function economyTick(){
   for(let m=mi-stepMins+1;m<=mi;m++){const hm=m%1440, d2=Math.floor(m/1440)+1;
     if(hm===7*60+30)cash(-180,'Provisions & coal delivered');
     if(hm===18*60){const w=STAFF.reduce((s,p)=>s+p.wage,0);cash(-w,'Staff wages paid ('+STAFF.length+' on the books)');}
-    if(hm===9*60&&(d2-1)%7===0){for(const a of APTS)cash(a.rent,'Weekly rent — Apt '+a.id,((a.x1+a.x2)/2),FLOORS[a.fl].y-40);}
+    if(hm===9*60&&(d2-1)%7===0){for(const a of APTS)cash(a.rent,'Weekly rent — '+(a.id.startsWith('PH')?'Suite ':'Apt ')+a.id,((a.x1+a.x2)/2),FLOORS[a.fl].y-40);}
   }
   // bookings
   if(h>=10&&h<20){
