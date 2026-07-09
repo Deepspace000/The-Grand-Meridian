@@ -563,6 +563,18 @@ function bathNookTub(x,y){ // penthouse bathroom: clawfoot tub + w.c. (~34 wide)
   fr(g,x+4.5,y-13,15,3,'rgba(140,190,215,.55)');
   fr(g,x+26,y-18,4,13,'#e8eae2'); fr(g,x+25,y-9,9,5,'#f0f2ea');
   fr(g,x+25,y-10.5,10,2,'#d0d2c8'); fr(g,x+27,y-4,5,4,'#d8dad0');}
+function wallSign(x,y,text,w){ // a little framed brass-and-walnut plaque, centred on x
+  const ww=w||(text.length*5.6+14);
+  fr(g,x-ww/2-2,y-2,ww+4,15,'#c9a24a');
+  fr(g,x-ww/2,y,ww,11,'#3c2415');
+  g.fillStyle='#e8d7ae'; g.font='bold 7px Georgia'; g.textAlign='center';
+  g.fillText(text,x,y+8);}
+function wallSignV(x,y,word){ // vertical column sign, one letter per row
+  const hh=word.length*7+8;
+  fr(g,x-9,y-2,18,hh+4,'#c9a24a');
+  fr(g,x-7,y,14,hh,'#3c2415');
+  g.fillStyle='#e8d7ae'; g.font='bold 7px Georgia'; g.textAlign='center';
+  for(let i=0;i<word.length;i++)g.fillText(word[i],x,y+9+i*7);}
 function wallMirror(x,y){ g.strokeStyle='#c9a24a';g.lineWidth=2;
   g.beginPath();g.ellipse(x,y+8,6,9,0,0,7);g.stroke();
   g.fillStyle='#b8cad2';g.beginPath();g.ellipse(x,y+8,4.5,7.5,0,0,7);g.fill();
@@ -661,18 +673,20 @@ function buildStatic(){
    windowFrameReg(431,t+10,44,54,'#7a2e28'); windowFrameReg(529,t+10,44,54,'#7a2e28'); windowFrameReg(627,t+10,44,54,'#7a2e28');
    keyRack(573,t+18); wallMirror(390,t+20); fireplaceStatic(330,y);
    doorFrame(316,y); // entrance inside
-   g.fillStyle='#3a2a16';g.font='bold 9px Georgia';g.textAlign='center';g.fillText('RECEPTION',503,t+30);
+   g.textAlign='center';
    partition(802,t,y);
    wallpaper(802,t,1000,y,'#cfd8c2','stripe'); floorBoards(802,1000,y,'#9c744a');
    windowFrameReg(831,t+10,40,50,'#5f7a44'); windowFrameReg(929,t+10,40,50,'#5f7a44');
-   g.fillStyle='#3a2a16';g.font='bold 8px Georgia';g.fillText('CAFÉ  MERIDIAN',900,t+16);
-   wallPlates(888,t+32);
+   for(let i=0;i<3;i++){g.fillStyle='#e8e2d0';g.beginPath();g.arc(984,t+18+i*14,4.2,0,7);g.fill();  // plates, stacked in the pier
+     g.strokeStyle='#4a6a9a';g.lineWidth=1;g.beginPath();g.arc(984,t+18+i*14,2.6,0,7);g.stroke();}
    partition(1000,t,y);
    fr(g,1004,t,IR-1004,y-t,'#d8e2e4'); g.fillStyle='rgba(0,0,0,.06)';for(let x=1004;x<IR;x+=16)for(let yy=t;yy<y;yy+=16)if((x+yy)%32<16)g.fillRect(x,yy,16,16); // tiles
    floorBoards(1004,IR,y,'#8a8478');
    windowFrameReg(1029,t+10,36,44,'#8b9aa8'); windowFrameReg(1127,t+10,36,44,'#8b9aa8');
    toFG();
    rug(430,y,160); recDesk(470,y); grandfather(609,y); sofa(378,y,50,'#6d8a56'); plant(310,y);
+   wallSign(503,t+22,'RECEPTION',70);
+   wallSignV(890,t+22,'CAFÉ'); wallSignV(912,t+8,'MERIDIAN');
    chandelier(855,t+2,false); chandelier(935,t+2,false);
    cafeTable(812,y); chair(802,y,1); chair(846,y,-1); vase(826,y-18);
    cafeTable(868,y); chair(858,y,1); chair(902,y,-1); vase(882,y-18);
@@ -700,12 +714,14 @@ function buildStatic(){
    for(let x=IL;x<CORE_L;x+=17){g.beginPath();g.moveTo(x,y);g.lineTo(x+8,y+8);g.stroke();} // parquet
    for(const b of[355,453,551,649])windowFrameReg(b-21,t+18,42,60,'#6b3050'); // piano nobile
    wallMirror(502,t+26);
-   fr(g,378,t+42,50,24,'#7a4a5e'); g.fillStyle='#e0c8a0';g.font='italic 7px Georgia';g.fillText('~ dancing nightly ~',403,t+56); g.textAlign='center';
    partition(802,t,y);
    wallpaper(802,t,IR,y,'#9c8464','stripe'); carpet(802,IR,y,'#59452e');
    for(const b of[851,949,1047])windowFrameReg(b-20,t+18,40,52,'#6e5a3a'); // chimney bay stays blank
    fireplaceStatic(1130,y); antlers(998,t+20);
    toFG();
+   fr(g,377,t+40,52,28,'#c9a24a'); fr(g,380,t+43,46,22,'#5c2e1c');   // 'dancing nightly' in its own frame
+   g.fillStyle='#e8d7ae';g.font='bold 7px Georgia';g.textAlign='center';
+   g.fillText('DANCING',403,t+52);g.fillText('NIGHTLY',403,t+61);
    chandelier(380,t+15); chandelier(520,t+15); chandelier(640,t+15);
    pianoStatic(572,y,true);
    cafeTable(310,y); chair(344,y,-1); vase(324,y-18);
