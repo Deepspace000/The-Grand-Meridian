@@ -168,6 +168,8 @@ const BL=290, BR=1210, IL=304, IR=1196;      // building & interior x bounds
 const CORE_L=700, CORE_R=800, LIFT_L=704, LIFT_R=756;
 const STAIR_R=792, STAIR_L=766, STAIRX=STAIR_R;   // switchback stair endpoints in the core
 const STREETLAMPS=[45,150,1330,1470];             // old gas-style lamps, lit from 5pm
+// structural window bays: four per wing, stacked floor over floor like a real elevation
+const BAYS=[355,453,551,649,851,949,1047,1145];
 const STREET=900, DOOR_OUT=262, DOOR_IN=318; // entrance
 const FLOORS=[
   {name:'Basement',    top:906, y:978},
@@ -383,9 +385,9 @@ function drawSnowCover(){
   for(const tx of[220,1290,1440]){ctx.beginPath();ctx.ellipse(tx,STREET-78,20,6,0,3.34,6.1);ctx.fill();} // tree tops
 }
 
-// per-frame light sources {x,y,r,warm}
+// per-frame light sources {x,y,r,ext} — ext lights live outside the building
 let lights=[];
-const light=(x,y,r,warm=1)=>lights.push({x,y,r,warm});
+const light=(x,y,r,ext=false)=>lights.push({x,y,r,ext});
 
 // windows drawn dynamically (glass shows sky)
 const intWins=[]; // {x,y,w,h, room}  interior back-wall windows
@@ -651,19 +653,19 @@ function buildStatic(){
   // --- Ground: lobby / café / kitchen ---
   {const t=F[1].top,y=F[1].y;
    wallpaper(IL,t,CORE_L,y,'#c8a898','diamond'); carpet(IL,CORE_L,y,'#8e3b32');
-   windowFrameReg(380,t+12,44,46,'#7a2e28'); windowFrameReg(560,t+12,44,46,'#7a2e28');
-   keyRack(548,t+18); wallMirror(632,t+18); fireplaceStatic(330,y);
-   painting(452,t+16,30,20,'#87a07c'); doorFrame(316,y); // entrance inside
+   windowFrameReg(431,t+10,44,54,'#7a2e28'); windowFrameReg(529,t+10,44,54,'#7a2e28'); windowFrameReg(627,t+10,44,54,'#7a2e28');
+   keyRack(592,t+18); wallMirror(390,t+20); fireplaceStatic(330,y);
+   doorFrame(316,y); // entrance inside
    g.fillStyle='#3a2a16';g.font='bold 9px Georgia';g.textAlign='center';g.fillText('RECEPTION',503,t+30);
    partition(802,t,y);
    wallpaper(802,t,1000,y,'#cfd8c2','stripe'); floorBoards(802,1000,y,'#9c744a');
-   windowFrameReg(868,t+12,40,42,'#5f7a44');
-   wallPlates(818,t+18);
-   g.fillStyle='#3a2a16';g.font='bold 8px Georgia';g.fillText('CAFÉ  MERIDIAN',830,t+38);
+   windowFrameReg(831,t+10,40,50,'#5f7a44'); windowFrameReg(929,t+10,40,50,'#5f7a44');
+   g.fillStyle='#3a2a16';g.font='bold 8px Georgia';g.fillText('CAFÉ  MERIDIAN',900,t+16);
+   wallPlates(888,t+32);
    partition(1000,t,y);
    fr(g,1004,t,IR-1004,y-t,'#d8e2e4'); g.fillStyle='rgba(0,0,0,.06)';for(let x=1004;x<IR;x+=16)for(let yy=t;yy<y;yy+=16)if((x+yy)%32<16)g.fillRect(x,yy,16,16); // tiles
    floorBoards(1004,IR,y,'#8a8478');
-   windowFrameReg(1020,t+10,32,34,'#8b9aa8');
+   windowFrameReg(1029,t+10,36,44,'#8b9aa8'); windowFrameReg(1127,t+10,36,44,'#8b9aa8');
    toFG();
    rug(430,y,160); recDesk(470,y); grandfather(660,y); sofa(378,y,50,'#6d8a56'); plant(310,y);
    chandelier(855,t+2,false); chandelier(935,t+2,false);
@@ -692,13 +694,13 @@ function buildStatic(){
    fr(g,IL,t,CORE_L-IL,16,'#8e5a70'); g.fillStyle='#d8b45a'; for(let x=IL+10;x<CORE_L;x+=24)g.fillRect(x,t+12,10,2); // frieze
    floorBoards(IL,CORE_L,y,'#c09a5e'); g.strokeStyle='rgba(120,70,20,.35)';g.lineWidth=1;
    for(let x=IL;x<CORE_L;x+=17){g.beginPath();g.moveTo(x,y);g.lineTo(x+8,y+8);g.stroke();} // parquet
-   windowFrameReg(340,t+22,42,52,'#6b3050'); windowFrameReg(470,t+22,42,52,'#6b3050');
-   wallMirror(558,t+26);
-   fr(g,IL+10,t+40,60,26,'#7a4a5e'); g.fillStyle='#e0c8a0';g.font='italic 8px Georgia';g.fillText('~ dancing nightly ~',IL+40,t+56); g.textAlign='center';
+   for(const b of[355,453,551,649])windowFrameReg(b-21,t+18,42,60,'#6b3050'); // piano nobile
+   wallMirror(502,t+26);
+   fr(g,378,t+42,50,24,'#7a4a5e'); g.fillStyle='#e0c8a0';g.font='italic 7px Georgia';g.fillText('~ dancing nightly ~',403,t+56); g.textAlign='center';
    partition(802,t,y);
    wallpaper(802,t,IR,y,'#9c8464','stripe'); carpet(802,IR,y,'#59452e');
-   windowFrameReg(1058,t+16,40,46,'#6e5a3a');
-   fireplaceStatic(1130,y); antlers(966,t+20);
+   for(const b of[851,949,1047])windowFrameReg(b-20,t+18,40,52,'#6e5a3a'); // chimney bay stays blank
+   fireplaceStatic(1130,y); antlers(998,t+20);
    toFG();
    chandelier(380,t+15); chandelier(520,t+15); chandelier(640,t+15);
    pianoStatic(600,y,true);
@@ -719,8 +721,9 @@ function buildStatic(){
       const left=r.x1<CORE_L, cx=(r.x1+r.x2)/2;
       wallpaper(r.x1,t,r.x2,y,base,motif);
       (i%2?floorBoards:carpet)(r.x1,r.x2,y,i%2?'#a8794a':'#7d5d70');
-      windowFrameReg(cx-20,t+12,40,40,'#7a5433');
-      painting(left?r.bedX-24:r.bedX+36,t+16,22,16,pick(['#87a07c','#6b7f9c','#b08a6a']));
+      const bs=BAYS.filter(b=>b>r.x1+20&&b<r.x2-20);
+      for(const b of bs)windowFrameReg(b-18,t+12,36,44,'#7a5433');
+      painting((bs[0]+bs[1])/2-11,t+16,22,16,pick(['#87a07c','#6b7f9c','#b08a6a']));
       const doorX=left?r.x2-12:r.x1+14;
       aptDoorway(doorX,fi,22,41);                         // animated, 20% taller than before
       g.fillStyle='#5a4326';g.font='bold 8px Georgia';g.fillText(r.id,doorX,y-53);
@@ -738,13 +741,13 @@ function buildStatic(){
   // --- Apartment floors F4,F5 ---
   {const t=F[5].top,y=F[5].y; // 4A Babbages / 4B Theo
    wallpaper(306,t,698,y,'#d9c6a8','diamond'); carpet(306,698,y,'#7a4a3c');
-   windowFrameReg(360,t+12,40,40,'#8a5a3c'); windowFrameReg(560,t+12,40,40,'#8a5a3c');
-   aptDoorway(686,5); painting(444,t+16,26,18,'#b08a6a');
-   g.fillStyle='#5a4326';g.font='bold 8px Georgia';g.fillText('APT 4A',330,t+14);
+   for(const b of[355,453,551,649])windowFrameReg(b-18,t+12,36,44,'#8a5a3c');
+   aptDoorway(686,5); painting(391,t+16,26,18,'#b08a6a');
+   g.fillStyle='#5a4326';g.font='bold 8px Georgia';g.fillText('APT 4A',404,t+14);
    wallpaper(802,t,1194,y,'#bcc8b4','stripe'); floorBoards(802,1194,y);
-   windowFrameReg(940,t+12,40,40,'#5f7a44'); windowFrameReg(1080,t+12,40,40,'#5f7a44');
-   aptDoorway(814,5); painting(1000,t+16,24,16,'#87a07c');
-   g.fillStyle='#5a4326';g.fillText('APT 4B',1170,t+14);
+   for(const b of[851,949,1047,1145])windowFrameReg(b-18,t+12,36,44,'#5f7a44');
+   aptDoorway(814,5); painting(986,t+16,24,16,'#87a07c');
+   g.fillStyle='#5a4326';g.fillText('APT 4B',998,t+14);
    toFG();
    rug(420,y,140); bathNook(306,y);
    bed(APTS[0].bedX-20,y); sideTable(APTS[0].bedX+34,y); tblLamp(APTS[0].bedX+34,y,true);
@@ -757,13 +760,13 @@ function buildStatic(){
   }
   {const t=F[6].top,y=F[6].y; // 5A Agnes / 5B Dr Cross
    wallpaper(306,t,698,y,'#e8c9c0','dot'); carpet(306,698,y,'#8e5a70');
-   windowFrameReg(400,t+12,40,40,'#9c4a5a'); windowFrameReg(520,t+12,40,40,'#9c4a5a');
-   aptDoorway(686,6); painting(470,t+16,22,16,'#6b7f9c');
-   g.fillStyle='#5a4326';g.font='bold 8px Georgia';g.fillText('APT 5A',330,t+14);
+   for(const b of[355,453,551,649])windowFrameReg(b-18,t+12,36,44,'#9c4a5a');
+   aptDoorway(686,6); painting(393,t+16,22,16,'#6b7f9c');
+   g.fillStyle='#5a4326';g.font='bold 8px Georgia';g.fillText('APT 5A',404,t+14);
    wallpaper(802,t,1194,y,'#c8ccd8','stripe'); floorBoards(802,1194,y,'#8a6a48');
-   windowFrameReg(880,t+12,44,42,'#4a5a7a'); windowFrameReg(1020,t+12,44,42,'#4a5a7a'); windowFrameReg(1120,t+12,44,42,'#4a5a7a');
-   aptDoorway(814,6); painting(940,t+16,28,18,'#6b7f9c');
-   g.fillStyle='#5a4326';g.fillText('APT 5B',1170,t+14);
+   for(const b of[851,949,1047,1145])windowFrameReg(b-18,t+12,36,44,'#4a5a7a');
+   aptDoorway(814,6); painting(984,t+16,28,18,'#6b7f9c');
+   g.fillStyle='#5a4326';g.fillText('APT 5B',998,t+14);
    toFG();
    rug(440,y,120,'#8e5a70'); bathNook(306,y);
    bed(APTS[2].bedX-20,y); sideTable(APTS[2].bedX+34,y); tblLamp(APTS[2].bedX+34,y,true);
@@ -782,14 +785,14 @@ function buildStatic(){
    // PH1
    wallpaper(IL,t,698,y,'#e6dcc2','diamond'); carpet(IL,698,y,'#7a3b52');
    fr(g,IL,t,698-IL,12,'#b39558'); g.fillStyle='rgba(255,255,255,.25)'; for(let x=IL+8;x<690;x+=22)g.fillRect(x,t+8,10,2); // gilt frieze
-   windowFrameReg(358,t+16,44,50,'#8a5a3c'); windowFrameReg(478,t+16,44,50,'#8a5a3c'); windowFrameReg(598,t+16,44,50,'#8a5a3c');
-   aptDoorway(686,7,24,44); painting(430,t+20,26,18,'#6b7f9c');
+   for(const b of[355,453,551,649])windowFrameReg(b-20,t+16,40,52,'#8a5a3c');
+   aptDoorway(686,7,24,44); painting(391,t+20,26,18,'#6b7f9c');
    g.fillStyle='#5a4326';g.font='bold 8px Georgia';g.fillText('PH 1',686,y-53);
    // PH2
    wallpaper(802,t,IR,y,'#d8d2c4','stripe'); floorBoards(802,IR,y,'#8a6a48');
    fr(g,802,t,IR-802,12,'#b39558'); for(let x=810;x<IR-8;x+=22)g.fillRect(x,t+8,10,2);
-   windowFrameReg(880,t+16,44,50,'#4a5a7a'); windowFrameReg(1000,t+16,44,50,'#4a5a7a'); windowFrameReg(1114,t+16,44,50,'#4a5a7a');
-   aptDoorway(816,7,24,44); painting(960,t+20,26,18,'#87a07c');
+   for(const b of[851,949,1047,1145])windowFrameReg(b-20,t+16,40,52,'#4a5a7a');
+   aptDoorway(816,7,24,44); painting(984,t+20,26,18,'#87a07c');
    g.fillStyle='#5a4326';g.fillText('PH 2',816,y-53);
    toFG();
    rug(420,y,170,'#7a3b52'); bathNookTub(310,y);
@@ -1988,26 +1991,44 @@ function drawLighting(h,dk,time,day){
   light(730,lift.y-40,52);                                      // glowing lift cab
   for(let fi=0;fi<7;fi++)light(770,(FLOORS[fi].y+FLOORS[fi+1].y)/2-26,24); // dim stairwell landings
   if(h>15||h<7)light(1106,FLOORS[2].y-24,20);                   // lounge candle
-  if(h>=17||h<6.25)for(const lx of STREETLAMPS)light(lx,STREET-88,72); // street lamps, on at 5pm
-  if(h>=17||h<6.25){light(540,214,120);light(750,214,130);light(960,214,120);} // the sign burns through the dark
+  if(h>=17||h<6.25)for(const lx of STREETLAMPS)light(lx,STREET-88,72,true); // street lamps, on at 5pm
+  if(h>=17||h<6.25){light(540,214,120,true);light(750,214,130,true);light(960,214,120,true);} // the sign burns through the dark
   for(const L of DECOR_LAMPS)light(L.x,L.y,L.r);                // miniature fittings
-  light(BL-30,STREET-52,52);                                    // porch
+  light(BL-30,STREET-52,52,true);                               // porch
   if(!fx.boilerBroken)light(400,FLOORS[0].y-12,46);             // boiler glow
   if(h>15||h<7){light(346,FLOORS[1].y-14,52);light(1146,FLOORS[2].y-14,52);} // fireplaces
+  // with the front on, interior light may only escape through the glass
+  const winClip=c2=>{c2.beginPath();
+    for(const wn of intWins)c2.rect(wn.x,wn.y,wn.w,wn.h);
+    for(let fi=1;fi<7;fi++){const ym=(FLOORS[fi].y+FLOORS[fi+1].y)/2;
+      c2.moveTo(778,ym-22);c2.arc(770,ym-22,8,0,7);}
+    c2.clip();};
+  const punch=L=>{const rg=dctx.createRadialGradient(L.x,L.y,2,L.x,L.y,L.r);
+    rg.addColorStop(0,'rgba(0,0,0,0.95)');rg.addColorStop(1,'rgba(0,0,0,0)');
+    dctx.fillStyle=rg;dctx.beginPath();dctx.arc(L.x,L.y,L.r,0,7);dctx.fill();};
   dctx.setTransform(1,0,0,1,0,0);
   dctx.clearRect(0,0,W,H);
   dctx.fillStyle='rgba(10,14,40,'+dk+')'; dctx.fillRect(0,0,W,H);
   dctx.globalCompositeOperation='destination-out';
-  for(const L of lights){const rg=dctx.createRadialGradient(L.x,L.y,2,L.x,L.y,L.r);
-    rg.addColorStop(0,'rgba(0,0,0,0.95)');rg.addColorStop(1,'rgba(0,0,0,0)');
-    dctx.fillStyle=rg;dctx.beginPath();dctx.arc(L.x,L.y,L.r,0,7);dctx.fill();}
+  if(frontOn){
+    for(const L of lights)if(L.ext)punch(L);
+    dctx.save(); winClip(dctx);
+    for(const L of lights)if(!L.ext)punch(L);
+    dctx.restore();
+  } else for(const L of lights)punch(L);
   dctx.globalCompositeOperation='source-over';
   ctx.drawImage(darkCv,0,0);
-  // warm glow on top
-  ctx.save();ctx.globalCompositeOperation='lighter';
-  for(const L of lights){const rg=ctx.createRadialGradient(L.x,L.y,1,L.x,L.y,L.r*0.8);
+  // warm glow on top (same rule: interior warmth stays behind the glass)
+  const glow=L=>{const rg=ctx.createRadialGradient(L.x,L.y,1,L.x,L.y,L.r*0.8);
     rg.addColorStop(0,'rgba(255,180,80,'+(0.13*dk*1.6)+')');rg.addColorStop(1,'rgba(255,180,80,0)');
-    ctx.fillStyle=rg;ctx.beginPath();ctx.arc(L.x,L.y,L.r*0.8,0,7);ctx.fill();}
+    ctx.fillStyle=rg;ctx.beginPath();ctx.arc(L.x,L.y,L.r*0.8,0,7);ctx.fill();};
+  ctx.save();ctx.globalCompositeOperation='lighter';
+  if(frontOn){
+    for(const L of lights)if(L.ext)glow(L);
+    ctx.save(); winClip(ctx);
+    for(const L of lights)if(!L.ext)glow(L);
+    ctx.restore();
+  } else for(const L of lights)glow(L);
   ctx.restore();
 }
 // ============================== UI PANELS ==============================
