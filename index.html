@@ -429,8 +429,11 @@ const APTS=[
 const cleaningQueue=[];
 
 // ============================== STATIC ARTWORK ==============================
-const bg=document.createElement('canvas'); bg.width=W; bg.height=H;
-const g=bg.getContext('2d');
+const bg=document.createElement('canvas'); bg.width=W; bg.height=H;    // walls, floors & shell — behind the windows
+const fgc=document.createElement('canvas'); fgc.width=W; fgc.height=H; // furniture & fittings — in front of the windows
+const gBack=bg.getContext('2d'), gFront=fgc.getContext('2d');
+let g=gBack;
+const toFG=()=>{g=gFront;}, toBG=()=>{g=gBack;};
 
 function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
 function fr(c,x,y,w,h,col){c.fillStyle=col;c.fillRect(x,y,w,h);}
@@ -613,40 +616,43 @@ function buildStatic(){
    fr(g,IL,t,IR-IL,y-t,'#8f8578'); fr(g,IL,y,IR-IL,8,'#6e6a60');
    g.fillStyle='rgba(0,0,0,.14)'; for(let x=IL;x<IR;x+=40)g.fillRect(x,t,1.5,y-t); // block wall joints
    pipes(IL+4,CORE_L-4,t+10); pipes(CORE_R+4,IR-4,t+12);
+   partition(560,t,y); partition(802,t,y);
+   painting(1150,t+20,18,13,'#7a6a4a');
+   toFG();
    boilerStatic(376,y); fr(g,306,y-20,40,20,'#2a2624'); // coal pile base
    g.fillStyle='#1d1a18'; for(let i=0;i<26;i++){g.beginPath();g.arc(rnd(308,344),rnd(y-22,y-4),rnd(2,4),0,7);g.fill();}
-   partition(560,t,y);
    washer(576,y); washer(606,y); washer(636,y); counterTop(662,y,32,'#7a7468');
    g.strokeStyle='#9a948a';g.lineWidth=1;g.beginPath();g.moveTo(566,t+26);g.lineTo(694,t+22);g.stroke(); // washing line
    g.fillStyle='#e8e0cc'; fr(g,590,t+24,10,14,'#e8e0cc'); fr(g,616,t+22,10,16,'#d8e6da'); fr(g,646,t+23,10,15,'#e8d7ae');
-   partition(802,t,y);
    workbench(816,y); crates(890,y); crates(940,y);
    fr(g,986,y-44,3,44,'#5e4126'); for(let s=0;s<4;s++){fr(g,986,y-40+s*10,44,3,'#5e4126'); for(let b=0;b<5;b++){g.fillStyle='#3f2b1a';g.beginPath();g.arc(992+b*8,y-42+s*10,3,0,7);g.fill();}} // wine rack
    crates(1050,y); fr(g,1096,y-30,26,30,'#6e5a3a'); fr(g,1100,y-26,18,22,'#8a7448');
    bed(1140,y,44); sideTable(1128,y); tblLamp(1128,y); // Stan's cot corner
-   painting(1150,t+20,18,13,'#7a6a4a');
+   toBG();
   }
   // --- Ground: lobby / café / kitchen ---
   {const t=F[1].top,y=F[1].y;
    wallpaper(IL,t,CORE_L,y,'#c8a898','diamond'); carpet(IL,CORE_L,y,'#8e3b32');
    windowFrameReg(380,t+12,44,46,'#7a2e28'); windowFrameReg(560,t+12,44,46,'#7a2e28');
-   rug(430,y,160); recDesk(470,y); keyRack(548,t+18);
-   grandfather(660,y); wallMirror(632,t+18); fireplaceStatic(330,y); sofa(378,y,50,'#6d8a56'); plant(310,y);
+   keyRack(548,t+18); wallMirror(632,t+18); fireplaceStatic(330,y);
    painting(452,t+16,30,20,'#87a07c'); doorFrame(316,y); // entrance inside
    g.fillStyle='#3a2a16';g.font='bold 9px Georgia';g.textAlign='center';g.fillText('RECEPTION',503,t+30);
    partition(802,t,y);
    wallpaper(802,t,1000,y,'#cfd8c2','stripe'); floorBoards(802,1000,y,'#9c744a');
    windowFrameReg(868,t+12,40,42,'#5f7a44');
-   chandelier(855,t+2,false); chandelier(935,t+2,false); wallPlates(818,t+18);
-   cafeTable(812,y); chair(802,y,1); chair(846,y,-1); vase(826,y-18);
-   cafeTable(868,y); chair(858,y,1); chair(902,y,-1); vase(882,y-18);
-   cafeTable(924,y); chair(914,y,1); vase(938,y-18);
-   counterTop(956,y,40,'#6e4a28'); fr(g,962,y-26,14,8,'#b8b0a0'); // cake dome
+   wallPlates(818,t+18);
    g.fillStyle='#3a2a16';g.font='bold 8px Georgia';g.fillText('CAFÉ  MERIDIAN',830,t+38);
    partition(1000,t,y);
    fr(g,1004,t,IR-1004,y-t,'#d8e2e4'); g.fillStyle='rgba(0,0,0,.06)';for(let x=1004;x<IR;x+=16)for(let yy=t;yy<y;yy+=16)if((x+yy)%32<16)g.fillRect(x,yy,16,16); // tiles
    floorBoards(1004,IR,y,'#8a8478');
    windowFrameReg(1020,t+10,32,34,'#8b9aa8');
+   toFG();
+   rug(430,y,160); recDesk(470,y); grandfather(660,y); sofa(378,y,50,'#6d8a56'); plant(310,y);
+   chandelier(855,t+2,false); chandelier(935,t+2,false);
+   cafeTable(812,y); chair(802,y,1); chair(846,y,-1); vase(826,y-18);
+   cafeTable(868,y); chair(858,y,1); chair(902,y,-1); vase(882,y-18);
+   cafeTable(924,y); chair(914,y,1); vase(938,y-18);
+   counterTop(956,y,40,'#6e4a28'); fr(g,962,y-26,14,8,'#b8b0a0'); // cake dome
    counterTop(1010,y,52,'#9aa0a6'); stove(1074,y); fridge(1130,y); counterTop(1158,y,34,'#9aa0a6');
    g.strokeStyle='#777';g.lineWidth=1.5; for(let i=0;i<4;i++){g.beginPath();g.arc(1015+i*12,t+34,5,0,3.14);g.stroke();} // hanging pans
    // copper pot rack over the far counter
@@ -660,6 +666,7 @@ function buildStatic(){
    fr(g,1164,y-26,14,8,'#9aa0a6'); fr(g,1166,y-32,10,6,'#8a9096'); fr(g,1167.5,y-36,7,4,'#a8aeb4');
    fr(g,1163,y-27,16,1.5,'#c8ced2'); fr(g,1165,y-33,12,1.5,'#c8ced2');
    fr(g,1038,y-24,12,6,'#b06a3a'); fr(g,1037,y-25,14,1.5,'#d8895a'); // copper stockpot by the stove
+   toBG();
   }
   // --- F1 Ballroom + lounge ---
   {const t=F[2].top,y=F[2].y;
@@ -668,20 +675,23 @@ function buildStatic(){
    floorBoards(IL,CORE_L,y,'#c09a5e'); g.strokeStyle='rgba(120,70,20,.35)';g.lineWidth=1;
    for(let x=IL;x<CORE_L;x+=17){g.beginPath();g.moveTo(x,y);g.lineTo(x+8,y+8);g.stroke();} // parquet
    windowFrameReg(340,t+22,42,52,'#6b3050'); windowFrameReg(470,t+22,42,52,'#6b3050');
-   chandelier(380,t+15); chandelier(520,t+15); chandelier(640,t+15);
-   pianoStatic(600,y,true);
-   cafeTable(310,y); chair(344,y,-1); vase(324,y-18);
-   cafeTable(360,y); chair(350,y,1); chair(394,y,-1); vase(374,y-18);
-   cafeTable(430,y); chair(420,y,1); chair(464,y,-1); vase(444,y-18);
    wallMirror(558,t+26);
    fr(g,IL+10,t+40,60,26,'#7a4a5e'); g.fillStyle='#e0c8a0';g.font='italic 8px Georgia';g.fillText('~ dancing nightly ~',IL+40,t+56); g.textAlign='center';
    partition(802,t,y);
    wallpaper(802,t,IR,y,'#9c8464','stripe'); carpet(802,IR,y,'#59452e');
    windowFrameReg(1058,t+16,40,46,'#6e5a3a');
-   barCounter(820,y,90); fireplaceStatic(1130,y); sofa(940,y,54,'#6b4a3c'); chair(1016,y,-1); bookshelf(1035,y,44);
-   antlers(966,t+20);
+   fireplaceStatic(1130,y); antlers(966,t+20);
+   toFG();
+   chandelier(380,t+15); chandelier(520,t+15); chandelier(640,t+15);
+   pianoStatic(600,y,true);
+   cafeTable(310,y); chair(344,y,-1); vase(324,y-18);
+   cafeTable(360,y); chair(350,y,1); chair(394,y,-1); vase(374,y-18);
+   cafeTable(430,y); chair(420,y,1); chair(464,y,-1); vase(444,y-18);
+   rug(920,y,120,'#59452e','#b98d54');
+   barCounter(820,y,90); sofa(940,y,54,'#6b4a3c'); chair(1016,y,-1); bookshelf(1035,y,44);
    sideTable(1098,y); fr(g,1103,y-15,6,2,'#c9a24a'); fr(g,1104.5,y-21,3,6,'#f0ead8'); // candlestick by the fire
-   plant(1188-16,y); rug(920,y,120,'#59452e','#b98d54');
+   plant(1188-16,y);
+   toBG();
   }
   // --- Hotel floors F2,F3 ---
   for(const fi of[3,4]){const t=F[fi].top,y=F[fi].y;
@@ -692,52 +702,62 @@ function buildStatic(){
       wallpaper(r.x1,t,r.x2,y,base,motif);
       (i%2?floorBoards:carpet)(r.x1,r.x2,y,i%2?'#a8794a':'#7d5d70');
       windowFrameReg(cx-20,t+12,40,40,'#7a5433');
+      painting(left?r.bedX-24:r.bedX+36,t+16,22,16,pick(['#87a07c','#6b7f9c','#b08a6a']));
+      const doorX=left?r.x2-12:r.x1+14;
+      aptDoorway(doorX,fi,22,41);                         // animated, 20% taller than before
+      g.fillStyle='#5a4326';g.font='bold 8px Georgia';g.fillText(r.id,doorX,y-53);
+      toFG();
       pendantLamp(left?cx+44:cx-44,t,12);                 // ceiling lamp
       bed(r.bedX-20,y);
       sideTable(left?r.bedX+36:r.bedX-36,y); tblLamp(left?r.bedX+36:r.bedX-36,y);
       wardrobe(left?(r.x2-r.x1>190?r.x2-88:r.x2-60):r.x1+46,y); // kept clear of the door
       bathNook(left?r.x1+4:r.x2-30,y);                    // shower at the far end of the room
-      painting(left?r.bedX-24:r.bedX+36,t+16,22,16,pick(['#87a07c','#6b7f9c','#b08a6a']));
       if(r.suite)sofa(r.deskX-10,y,36,'#557a8a');
       else if(r.x2-r.x1>190)chair(r.deskX,y,1);
-      const doorX=left?r.x2-12:r.x1+14;
-      aptDoorway(doorX,fi,22,41);                         // animated, 20% taller than before
-      g.fillStyle='#5a4326';g.font='bold 8px Georgia';g.fillText(r.id,doorX,y-53); });
+      toBG(); });
     partition(520,t,y); partition(990,t,y);
   }
   // --- Apartment floors F4,F5 ---
   {const t=F[5].top,y=F[5].y; // 4A Babbages / 4B Theo
    wallpaper(306,t,698,y,'#d9c6a8','diamond'); carpet(306,698,y,'#7a4a3c');
    windowFrameReg(360,t+12,40,40,'#8a5a3c'); windowFrameReg(560,t+12,40,40,'#8a5a3c');
-   bathNook(306,y); aptDoorway(686,5);
-   bed(APTS[0].bedX-20,y); sideTable(APTS[0].bedX+34,y); tblLamp(APTS[0].bedX+34,y,true);
-   sofa(430,y,52,'#6d8a56'); tvSet(500,y); table(560,y,40); chair(550,y,1); chair(606,y,-1); vase(580,y-16);
-   pendantLamp(580,t,14); bookshelf(636,y,42); plant(614,y); painting(444,t+16,26,18,'#b08a6a'); rug(420,y,140);
+   aptDoorway(686,5); painting(444,t+16,26,18,'#b08a6a');
    g.fillStyle='#5a4326';g.font='bold 8px Georgia';g.fillText('APT 4A',330,t+14);
    wallpaper(802,t,1194,y,'#bcc8b4','stripe'); floorBoards(802,1194,y);
    windowFrameReg(940,t+12,40,40,'#5f7a44'); windowFrameReg(1080,t+12,40,40,'#5f7a44');
-   aptDoorway(814,5); deskTypewriter(APTS[1].deskX-10,y); deskLamp(APTS[1].deskX+21,y); bookshelf(910,y,46); bookshelf(940,y,46);
-   sofa(1000,y,46,'#8a4a3c'); sideTable(1078,y); tblLamp(1078,y,true); bed(APTS[1].bedX-24,y,48); bathNook(1160,y);
-   pendantLamp(1000,t,14); painting(1000,t+16,24,16,'#87a07c'); rug(980,y,110);
+   aptDoorway(814,5); painting(1000,t+16,24,16,'#87a07c');
    g.fillStyle='#5a4326';g.fillText('APT 4B',1170,t+14);
+   toFG();
+   rug(420,y,140); bathNook(306,y);
+   bed(APTS[0].bedX-20,y); sideTable(APTS[0].bedX+34,y); tblLamp(APTS[0].bedX+34,y,true);
+   sofa(430,y,52,'#6d8a56'); tvSet(500,y); table(560,y,40); chair(550,y,1); chair(606,y,-1); vase(580,y-16);
+   pendantLamp(580,t,14); bookshelf(636,y,42); plant(614,y);
+   rug(980,y,110); deskTypewriter(APTS[1].deskX-10,y); deskLamp(APTS[1].deskX+21,y); bookshelf(910,y,46); bookshelf(940,y,46);
+   sofa(1000,y,46,'#8a4a3c'); sideTable(1078,y); tblLamp(1078,y,true); bed(APTS[1].bedX-24,y,48); bathNook(1160,y);
+   pendantLamp(1000,t,14);
+   toBG();
   }
-  {const t=F[6].top,y=F[6].y; // 5A Agnes / PH Dr Cross
+  {const t=F[6].top,y=F[6].y; // 5A Agnes / 5B Dr Cross
    wallpaper(306,t,698,y,'#e8c9c0','dot'); carpet(306,698,y,'#8e5a70');
    windowFrameReg(400,t+12,40,40,'#9c4a5a'); windowFrameReg(520,t+12,40,40,'#9c4a5a');
-   aptDoorway(686,6); bathNook(306,y);
-   bed(APTS[2].bedX-20,y); sideTable(APTS[2].bedX+34,y); tblLamp(APTS[2].bedX+34,y,true);
-   pendantLamp(470,t,14); deskLamp(516,y);
-   pianoStatic(580,y,false); sofa(450,y,44,'#7a4a6b'); table(506,y,30);
-   globeStand(548,y); plant(430,y); painting(470,t+16,22,16,'#6b7f9c'); rug(440,y,120,'#8e5a70');
-   fr(g,636,y-22,16,10,'#b8a890'); // cat basket
+   aptDoorway(686,6); painting(470,t+16,22,16,'#6b7f9c');
    g.fillStyle='#5a4326';g.font='bold 8px Georgia';g.fillText('APT 5A',330,t+14);
    wallpaper(802,t,1194,y,'#c8ccd8','stripe'); floorBoards(802,1194,y,'#8a6a48');
    windowFrameReg(880,t+12,44,42,'#4a5a7a'); windowFrameReg(1020,t+12,44,42,'#4a5a7a'); windowFrameReg(1120,t+12,44,42,'#4a5a7a');
-   aptDoorway(814,6); bathNook(1160,y);
+   aptDoorway(814,6); painting(940,t+16,28,18,'#6b7f9c');
+   g.fillStyle='#5a4326';g.fillText('APT 5B',1170,t+14);
+   toFG();
+   rug(440,y,120,'#8e5a70'); bathNook(306,y);
+   bed(APTS[2].bedX-20,y); sideTable(APTS[2].bedX+34,y); tblLamp(APTS[2].bedX+34,y,true);
+   pendantLamp(470,t,14); deskLamp(516,y);
+   pianoStatic(580,y,false); sofa(450,y,44,'#7a4a6b'); table(506,y,30);
+   globeStand(548,y); plant(430,y);
+   fr(g,636,y-22,16,10,'#b8a890'); // cat basket
+   rug(900,y,150,'#41597a'); bathNook(1160,y);
    bed(APTS[3].bedX-24,y,50); sofa(920,y,52,'#41597a'); tvSet(990,y); barCounter(840,y,54);
    pendantLamp(950,t,14); pendantLamp(1090,t,14); sideTable(1064,y); tblLamp(1064,y,true);
-   bookshelf(886,y,44); plant(1030,y); painting(940,t+16,28,18,'#6b7f9c'); rug(900,y,150,'#41597a');
-   g.fillStyle='#5a4326';g.fillText('APT 5B',1170,t+14);
+   bookshelf(886,y,44); plant(1030,y);
+   toBG();
   }
   // --- Penthouse floor: two grand suites under the parapet ---
   {const t=F[7].top,y=F[7].y;
@@ -745,23 +765,27 @@ function buildStatic(){
    wallpaper(IL,t,698,y,'#e6dcc2','diamond'); carpet(IL,698,y,'#7a3b52');
    fr(g,IL,t,698-IL,12,'#b39558'); g.fillStyle='rgba(255,255,255,.25)'; for(let x=IL+8;x<690;x+=22)g.fillRect(x,t+8,10,2); // gilt frieze
    windowFrameReg(358,t+16,44,50,'#8a5a3c'); windowFrameReg(478,t+16,44,50,'#8a5a3c'); windowFrameReg(598,t+16,44,50,'#8a5a3c');
-   bathNookTub(310,y); aptDoorway(686,7,24,44);
-   bed(348,y); sideTable(404,y); tblLamp(404,y,true);
-   chandelier(500,t+14,false);
-   sofa(436,y,46,'#7a4a6b'); table(552,y,34); chair(544,y,1); chair(592,y,-1); vase(569,y-16);
-   bookshelf(636,y,40); gramophone(610,y); painting(430,t+20,26,18,'#6b7f9c'); rug(420,y,170,'#7a3b52');
+   aptDoorway(686,7,24,44); painting(430,t+20,26,18,'#6b7f9c');
    g.fillStyle='#5a4326';g.font='bold 8px Georgia';g.fillText('PH 1',686,y-53);
    // PH2
    wallpaper(802,t,IR,y,'#d8d2c4','stripe'); floorBoards(802,IR,y,'#8a6a48');
    fr(g,802,t,IR-802,12,'#b39558'); for(let x=810;x<IR-8;x+=22)g.fillRect(x,t+8,10,2);
    windowFrameReg(880,t+16,44,50,'#4a5a7a'); windowFrameReg(1000,t+16,44,50,'#4a5a7a'); windowFrameReg(1114,t+16,44,50,'#4a5a7a');
-   aptDoorway(816,7,24,44); wardrobe(848,y);
+   aptDoorway(816,7,24,44); painting(960,t+20,26,18,'#87a07c');
+   g.fillStyle='#5a4326';g.fillText('PH 2',816,y-53);
+   toFG();
+   rug(420,y,170,'#7a3b52'); bathNookTub(310,y);
+   bed(348,y); sideTable(404,y); tblLamp(404,y,true);
+   chandelier(500,t+14,false);
+   sofa(436,y,46,'#7a4a6b'); table(552,y,34); chair(544,y,1); chair(592,y,-1); vase(569,y-16);
+   bookshelf(636,y,40); gramophone(610,y);
+   rug(920,y,150,'#41597a'); wardrobe(848,y);
    chandelier(1000,t+14,false);
    barCounter(884,y,50); trophy(898,y-20); sofa(944,y,46,'#41597a');
    bed(1108,y); sideTable(1092,y); tblLamp(1092,y,true);
    bathNookTub(1160,y);
-   statue(1040,y); plant(1052,y); painting(960,t+20,26,18,'#87a07c'); rug(920,y,150,'#41597a');
-   g.fillStyle='#5a4326';g.fillText('PH 2',816,y-53);
+   statue(1040,y); plant(1052,y);
+   toBG();
   }
   // --- core: lift shaft & stairs, every floor ---
   for(let fi=0;fi<8;fi++){const t=FLOORS[fi].top,y=FLOORS[fi].y;
@@ -1556,6 +1580,8 @@ function render(time){
     ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(wn.x,wn.y+wn.h/2);ctx.lineTo(wn.x+wn.w,wn.y+wn.h/2);ctx.moveTo(wn.x+wn.w/2,wn.y);ctx.lineTo(wn.x+wn.w/2,wn.y+wn.h);ctx.stroke();
     ctx.fillStyle=wn.curt; ctx.fillRect(wn.x-5,wn.y-3,6,wn.h+6); ctx.fillRect(wn.x+wn.w-1,wn.y-3,6,wn.h+6);
     ctx.fillRect(wn.x-6,wn.y-5,wn.w+12,4);}
+  // furniture layer sits in front of the window glass
+  ctx.drawImage(fgc,0,0);
   // lift cab interior (sliding doors are drawn after the people, so riders show inside)
   {const cabH=58, cl=LIFT_L+5, cw=LIFT_R-LIFT_L-10;
    ctx.strokeStyle='#2a2622';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(730,lift.y-cabH);ctx.lineTo(730,FLOORS[TOPFL].top);ctx.stroke();
