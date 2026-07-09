@@ -925,12 +925,53 @@ buildStatic();
 const SKINS=['#e8b48c','#d9a06e','#c68a5c','#8a5a3a','#6e4428','#f0c39a'];
 const HAIRS=['#2a1c10','#4a3320','#7a5230','#b8b0a0','#d8cdb4','#8a4a2a','#1c1c1c'];
 const people=[];
+// ---- who's who: age, birthday, nationality (the year is 1931) ----
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const NATS=['English','English','English','Scottish','Irish','Welsh','American','French','Italian','Dutch','Canadian','Australian'];
+const BIOS={ // name → [age, 'day Month', nationality]
+ 'Harold Pemberton':[52,'3 June','English'],
+ 'Ivy Lane':[27,'21 April','English'],
+ 'Ernie Whitlock':[58,'9 November','English'],
+ 'Rosa Marchetti':[45,'15 August','Italian'],
+ 'Marco Silva':[33,'2 February','Portuguese'],
+ 'Felix Trent':[24,'30 September','English'],
+ 'Sylvie Beaumont':[29,'14 July','French'],
+ 'Doris Mabb':[61,'25 March','English'],
+ 'June Okafor':[35,'12 October','Nigerian'],
+ 'Pearl Antonelli':[26,'8 May','Italian-American'],
+ 'Stan Bricker':[63,'17 January','English'],
+ 'Monty Keys':[38,'29 December','American'],
+ 'Bruno Malone':[42,'11 March','Irish'],
+ 'Cyril Babbage':[72,'6 May','English'],
+ 'Edna Babbage':[69,'19 August','English'],
+ 'Theo Marsh':[34,'23 October','English'],
+ 'Miss Agnes Thornbury':[76,'1 April','English'],
+ 'Dr. Vivian Cross':[41,'27 June','Welsh'],
+ 'Madame Zora Petrova':[54,'13 February','Russian'],
+ 'Col. Aubrey Fitzwilliam':[68,'24 May','English'],
+ 'Mrs Prudence Whitlow':[44,'2 July','English'],
+ 'Master Tommy Whitlow':[8,'16 September','English'],
+ 'Mr Edmund Marsh':[38,'5 March','English'],
+ 'Miss Poppy Thornbury':[9,'22 June','English'],
+ 'Mrs Constance Bell':[45,'30 January','Welsh'],
+ 'Mr Nikolai Petrov':[31,'7 December','Russian'],
+ 'Maestro Sasha Lev':[59,'18 November','Russian'],
+ 'Master Freddie Fitzwilliam':[10,'4 August','English'],
+ 'Sgt. Albert Willis':[62,'26 February','English'],
+ 'Micky Flue':[47,'10 January','Irish'],
+ 'Reg Ferris':[51,'15 May','English'],
+ 'Dave Duncan':[44,'28 June','Scottish'],
+ 'Lou Watt':[39,'9 April','Scottish'],
+};
 function makePerson(o){const p=Object.assign({
   name:'?',role:'',kind:'staff',wage:0,
   floor:null,x:-60,dir:1,state:'out',pose:'stand',act:'away',statusText:'away',
   speed:rnd(42,58),phase:rnd(0,7),queue:[],climbY:null,outUntil:0,room:null,
   skin:pick(SKINS),hair:pick(HAIRS),shirt:'#8a6a4a',pants:'#4a3a2c',hat:null,dress:false,apron:false,
   sleeping:false,bedX:0,bedFl:0,meta:{}},o);
+ if(BIOS[p.name]){const[a,bd,nat]=BIOS[p.name]; p.bio={age:a,born:bd+' '+(1931-a),nat};}
+ else if(p.kind!=='ambient'){const a=p.child?ri(6,11):(p.kind==='tradie'?ri(28,58):ri(21,72));
+   p.bio={age:a,born:ri(1,28)+' '+pick(MONTHS)+' '+(1931-a),nat:pick(NATS)};}
  people.push(p); return p;}
 
 function footY(p){ if(p.floor==='street')return STREET;
@@ -1935,7 +1976,9 @@ addEventListener('mousemove',e=>{
     const d=Math.hypot(p.x-wx,footY(p)-17-wy); if(d<bd){bd=d;best=p;}}
   if(best){tip.style.display='block';
     tip.style.left=(e.clientX+14)+'px'; tip.style.top=(e.clientY+10)+'px';
-    tip.innerHTML='<b>'+esc(best.name)+'</b> <span class="r">'+esc(best.role||'')+'</span><br><span class="s">'+esc(best.statusText)+'</span>';}
+    tip.innerHTML='<b>'+esc(best.name)+'</b> <span class="r">'+esc(best.role||'')+'</span>'
+      +(best.bio?'<br><span class="s" style="color:#d8c9a0">'+esc(best.bio.nat)+' · aged '+best.bio.age+' · b. '+esc(best.bio.born)+'</span>':'')
+      +'<br><span class="s">'+esc(best.statusText)+'</span>';}
   else tip.style.display='none';
 });
 // ============================== MAIN LOOP ==============================
