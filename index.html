@@ -170,6 +170,7 @@ const STAIR_R=792, STAIR_L=766, STAIRX=STAIR_R;   // switchback stair endpoints 
 const STREETLAMPS=[45,150,1330,1470];             // old gas-style lamps, lit from 5pm
 // structural window bays: four per wing, stacked floor over floor like a real elevation
 const BAYS=[355,453,551,649,851,949,1047,1145];
+const PORTX=750; // stairwell porthole roundels, centred on the core
 const STREET=900, DOOR_OUT=262, DOOR_IN=318; // entrance
 const FLOORS=[
   {name:'Basement',    top:906, y:978},
@@ -376,7 +377,7 @@ function drawSnowCover(){
   if(snowCover<=0.02)return;
   const a=snowCover*0.92; ctx.fillStyle='rgba(240,245,251,'+a+')';
   ctx.fillRect(0,STREET-1,W,4);                          // the pavement
-  ctx.fillRect(BL-14,284,BR-BL+28,4);                    // parapet coping
+  ctx.fillRect(BL-20,269,BR-BL+40,4);                    // cornice crown
   ctx.fillRect(430,189,640,3);                           // top of the sign
   ctx.fillRect(BR-94,238,42,4);                          // chimney cap
   ctx.fillRect(BL-60,STREET-60,64,3);                    // porch roof
@@ -392,7 +393,7 @@ const light=(x,y,r,ext=false)=>lights.push({x,y,r,ext});
 // windows drawn dynamically (glass shows sky)
 const intWins=[]; // {x,y,w,h, room}  interior back-wall windows
 const extWins=[]; // {x,y,w,h, seed}  windows on the brick shell
-function regIntWin(x,y,w,h,curt){intWins.push({x,y,w,h,curt});}
+function regIntWin(x,y,w,h,curt,tier){intWins.push({x,y,w,h,curt,tier:tier||0});}
 function regExtWin(x,y,w,h){extWins.push({x,y,w,h,seed:extWins.length*7.13});}
 
 // ============================== ECONOMY ==============================
@@ -623,7 +624,7 @@ function bathNook(x,y){ // ~28px tiled corner: tall shower stall + w.c.
   fr(g,x+17,y-18,4,13,'#e8eae2');                                 // cistern
   fr(g,x+16,y-9,10,5,'#f0f2ea'); fr(g,x+16,y-10.5,11,2,'#d0d2c8');// bowl + seat
   fr(g,x+19,y-4,5,4,'#d8dad0');}                                  // base
-function windowFrameReg(x,y,w,h,curtCol){regIntWin(x,y,w,h,curtCol);}
+function windowFrameReg(x,y,w,h,curtCol,tier){regIntWin(x,y,w,h,curtCol,tier);}
 
 // ---- build the whole static scene ----
 const cityWins=[]; // background building windows (glow at night)
@@ -777,11 +778,11 @@ function buildStatic(){
   // --- Apartment floors F4,F5 ---
   {const t=F[5].top,y=F[5].y; // 4A Babbages / 4B Theo
    wallpaper(306,t,698,y,'#d9c6a8','diamond'); carpet(306,698,y,'#7a4a3c');
-   for(const b of[355,453,551,649])windowFrameReg(b-18,t+12,36,44,'#8a5a3c');
+   for(const b of[355,453,551,649])windowFrameReg(b-18,t+12,36,44,'#8a5a3c',1);
    aptDoorway(686,5); painting(391,t+16,26,18,'#b08a6a');
    g.fillStyle='#5a4326';g.font='bold 8px Georgia';g.fillText('APT 4A',404,t+14);
    wallpaper(802,t,1194,y,'#bcc8b4','stripe'); floorBoards(802,1194,y);
-   for(const b of[851,949,1047,1145])windowFrameReg(b-18,t+12,36,44,'#5f7a44');
+   for(const b of[851,949,1047,1145])windowFrameReg(b-18,t+12,36,44,'#5f7a44',1);
    aptDoorway(814,5); painting(986,t+16,24,16,'#87a07c');
    g.fillStyle='#5a4326';g.fillText('APT 4B',998,t+14);
    toFG();
@@ -796,11 +797,11 @@ function buildStatic(){
   }
   {const t=F[6].top,y=F[6].y; // 5A Agnes / 5B Dr Cross
    wallpaper(306,t,698,y,'#e8c9c0','dot'); carpet(306,698,y,'#8e5a70');
-   for(const b of[355,453,551,649])windowFrameReg(b-18,t+12,36,44,'#9c4a5a');
+   for(const b of[355,453,551,649])windowFrameReg(b-18,t+12,36,44,'#9c4a5a',1);
    aptDoorway(686,6); painting(393,t+16,22,16,'#6b7f9c');
    g.fillStyle='#5a4326';g.font='bold 8px Georgia';g.fillText('APT 5A',404,t+14);
    wallpaper(802,t,1194,y,'#c8ccd8','stripe'); floorBoards(802,1194,y,'#8a6a48');
-   for(const b of[851,949,1047,1145])windowFrameReg(b-18,t+12,36,44,'#4a5a7a');
+   for(const b of[851,949,1047,1145])windowFrameReg(b-18,t+12,36,44,'#4a5a7a',1);
    aptDoorway(814,6); painting(984,t+16,28,18,'#6b7f9c');
    g.fillStyle='#5a4326';g.fillText('APT 5B',998,t+14);
    toFG();
@@ -821,13 +822,13 @@ function buildStatic(){
    // PH1
    wallpaper(IL,t,698,y,'#e6dcc2','diamond'); carpet(IL,698,y,'#7a3b52');
    fr(g,IL,t,698-IL,12,'#b39558'); g.fillStyle='rgba(255,255,255,.25)'; for(let x=IL+8;x<690;x+=22)g.fillRect(x,t+8,10,2); // gilt frieze
-   for(const b of[355,453,551,649])windowFrameReg(b-20,t+16,40,52,'#8a5a3c');
+   for(const b of[355,453,551,649])windowFrameReg(b-20,t+16,40,52,'#8a5a3c',2);
    aptDoorway(686,7,24,44); painting(391,t+20,26,18,'#6b7f9c');
    g.fillStyle='#5a4326';g.font='bold 8px Georgia';g.fillText('PH 1',686,y-53);
    // PH2
    wallpaper(802,t,IR,y,'#d8d2c4','stripe'); floorBoards(802,IR,y,'#8a6a48');
    fr(g,802,t,IR-802,12,'#b39558'); for(let x=810;x<IR-8;x+=22)g.fillRect(x,t+8,10,2);
-   for(const b of[851,949,1047,1145])windowFrameReg(b-20,t+16,40,52,'#4a5a7a');
+   for(const b of[851,949,1047,1145])windowFrameReg(b-20,t+16,40,52,'#4a5a7a',2);
    aptDoorway(816,7,24,44); painting(984,t+20,26,18,'#87a07c');
    g.fillStyle='#5a4326';g.fillText('PH 2',816,y-53);
    toFG();
@@ -924,10 +925,20 @@ function buildShell(){
   c.fillStyle='#9a8f7c'; c.fillRect(BL-10,STREET-26,BR-BL+20,26);
   c.fillStyle='#8a7f6c'; c.fillRect(BL-10,STREET-26,BR-BL+20,4);
   c.fillStyle='#b8a88c'; c.fillRect(BL-14,TOPB+96,BR-BL+28,10); c.fillRect(BL-12,TOPB+102,BR-BL+24,3);
-  // parapet
-  c.fillStyle='#7d3428'; c.fillRect(BL-12,TOPB-16,BR-BL+24,18);
-  c.fillStyle='#b8a88c'; c.fillRect(BL-14,TOPB-20,BR-BL+28,6);
-  for(let x=BL-8;x<BR+8;x+=44)c.fillRect(x,TOPB-14,20,4);
+  // --- grand projecting cornice, 1926-style: dentils, paired consoles, deep fascia ---
+  c.fillStyle='#8a7f6c'; c.fillRect(BL-10,TOPB-8,BR-BL+20,10);              // bed mould
+  c.fillStyle='#d8cdb4'; for(let x=BL-8;x<BR+8;x+=10)c.fillRect(x,TOPB-8,5,6); // dentil course
+  for(let x=BL+12;x<BR-14;x+=64)for(const dx of[0,10]){                     // console brackets in pairs
+    c.fillStyle='#b8a88c'; c.fillRect(x+dx,TOPB-22,6,15);
+    c.fillStyle='#9a8f7c'; c.beginPath();c.arc(x+dx+3,TOPB-22,3,3.14,6.28);c.fill();
+    c.fillStyle='rgba(0,0,0,.15)'; c.fillRect(x+dx+4.5,TOPB-20,1.5,12);}
+  c.fillStyle='#b8a88c'; c.fillRect(BL-18,TOPB-26,BR-BL+36,6);              // deep fascia
+  c.fillStyle='#d8cdb4'; c.fillRect(BL-20,TOPB-30,BR-BL+40,5);              // cyma crown
+  c.fillStyle='#8a7f6c'; c.fillRect(BL-20,TOPB-31,BR-BL+40,1.5);
+  for(let x=BL+8;x<BR;x+=88){c.fillStyle='#9a8f7c';                        // little finials along the crest
+    c.fillRect(x-1.5,TOPB-37,3,7); c.beginPath();c.arc(x,TOPB-38,2.5,0,7);c.fill();}
+  for(const ax of[BL-14,BR+14]){c.fillStyle='#b8a88c';                     // corner acroteria
+    c.fillRect(ax-5,TOPB-36,10,6); c.beginPath();c.arc(ax,TOPB-38,4,0,7);c.fill();}
   // (the old attic window band is now the penthouse floor)
   // chimney
   c.fillStyle='#6e2a20'; c.fillRect(BR-90,TOPB-58,34,44); c.fillStyle='#b8a88c'; c.fillRect(BR-94,TOPB-62,42,7);
@@ -1056,19 +1067,35 @@ function buildFacade(){
   c.save(); c.globalCompositeOperation='destination-out';
   for(const wn of intWins)c.fillRect(wn.x-1,wn.y-1,wn.w+2,wn.h+2);
   for(let fi=1;fi<7;fi++){const ym=(FLOORS[fi].y+FLOORS[fi+1].y)/2;   // stairwell portholes
-    c.beginPath();c.arc(770,ym-22,8,0,7);c.fill();}
+    c.beginPath();c.arc(PORTX,ym-22,8,0,7);c.fill();}
   c.restore();
-  // window dressings: stone surrounds, stepped gold lintels, a whisper of glass
+  // window dressings, richer by floor: plain rooms, moulded resident floors, palatial penthouse
   for(const wn of intWins){
     c.fillStyle='#b8a88c'; c.fillRect(wn.x-5,wn.y-7,wn.w+10,5); c.fillRect(wn.x-6,wn.y+wn.h+1,wn.w+12,4);
-    c.fillStyle=GOLD; c.fillRect(wn.x+wn.w/2-9,wn.y-10,18,3); c.fillRect(wn.x+wn.w/2-5,wn.y-13,10,3); c.fillRect(wn.x+wn.w/2-2,wn.y-15.5,4,2.5);
+    if(wn.tier===0&&wn.h<58){ // the plain stepped lintel for the hotel-room floors
+      c.fillStyle=GOLD; c.fillRect(wn.x+wn.w/2-9,wn.y-10,18,3); c.fillRect(wn.x+wn.w/2-5,wn.y-13,10,3); c.fillRect(wn.x+wn.w/2-2,wn.y-15.5,4,2.5);}
+    if(wn.tier===0&&wn.h>=58){ // piano nobile: stone keystone
+      c.fillStyle='#d8cdb4'; c.beginPath();c.moveTo(wn.x+wn.w/2-5,wn.y-9);c.lineTo(wn.x+wn.w/2+5,wn.y-9);
+      c.lineTo(wn.x+wn.w/2+3,wn.y+2);c.lineTo(wn.x+wn.w/2-3,wn.y+2);c.closePath();c.fill();}
+    if(wn.tier>=1){ // resident floors: moulded surround, keystone, bracketed sill
+      c.strokeStyle='#d8cdb4'; c.lineWidth=2; c.strokeRect(wn.x-4,wn.y-5,wn.w+8,wn.h+8);
+      c.fillStyle='#d8cdb4'; c.beginPath();c.moveTo(wn.x+wn.w/2-4,wn.y-8);c.lineTo(wn.x+wn.w/2+4,wn.y-8);
+      c.lineTo(wn.x+wn.w/2+2.5,wn.y+1);c.lineTo(wn.x+wn.w/2-2.5,wn.y+1);c.closePath();c.fill();
+      c.fillStyle='#b8a88c'; c.fillRect(wn.x-3,wn.y+wn.h+5,4,5); c.fillRect(wn.x+wn.w-1,wn.y+wn.h+5,4,5);}
+    if(wn.tier===2){ // penthouse: segmental pediment, pilasters with gilt caps, balustraded sill
+      c.fillStyle='#b8a88c'; c.beginPath();c.moveTo(wn.x-9,wn.y-7);c.quadraticCurveTo(wn.x+wn.w/2,wn.y-24,wn.x+wn.w+9,wn.y-7);
+      c.lineTo(wn.x+wn.w+9,wn.y-4);c.quadraticCurveTo(wn.x+wn.w/2,wn.y-20,wn.x-9,wn.y-4);c.closePath();c.fill();
+      c.fillStyle=GOLD; c.beginPath();c.arc(wn.x+wn.w/2,wn.y-14,2.6,0,7);c.fill();
+      c.fillStyle='#d8cdb4'; c.fillRect(wn.x-7,wn.y-4,4,wn.h+7); c.fillRect(wn.x+wn.w+3,wn.y-4,4,wn.h+7);
+      c.fillStyle=GOLD; c.fillRect(wn.x-8,wn.y-6,6,2.5); c.fillRect(wn.x+wn.w+2,wn.y-6,6,2.5);
+      c.fillStyle='#d8cdb4'; for(let bx2=wn.x+2;bx2<wn.x+wn.w-2;bx2+=8)c.fillRect(bx2,wn.y+wn.h+5,3,6);}
     c.strokeStyle='#5a4a3a'; c.lineWidth=2; c.strokeRect(wn.x-1,wn.y-1,wn.w+2,wn.h+2);
     c.fillStyle='rgba(200,220,240,.13)'; c.fillRect(wn.x,wn.y,wn.w,wn.h);
     c.fillStyle='rgba(255,255,255,.09)';
     c.beginPath();c.moveTo(wn.x+2,wn.y+wn.h);c.lineTo(wn.x+wn.w*0.45,wn.y);c.lineTo(wn.x+wn.w*0.62,wn.y);c.lineTo(wn.x+wn.w*0.2,wn.y+wn.h);c.fill();}
   for(let fi=1;fi<7;fi++){const ym=(FLOORS[fi].y+FLOORS[fi+1].y)/2;
-    c.strokeStyle='#c9a24a'; c.lineWidth=2; c.beginPath();c.arc(770,ym-22,8.5,0,7);c.stroke();
-    c.fillStyle='rgba(200,220,240,.13)'; c.beginPath();c.arc(770,ym-22,8,0,7);c.fill();}
+    c.strokeStyle='#c9a24a'; c.lineWidth=2; c.beginPath();c.arc(PORTX,ym-22,8.5,0,7);c.stroke();
+    c.fillStyle='rgba(200,220,240,.13)'; c.beginPath();c.arc(PORTX,ym-22,8,0,7);c.fill();}
   // basement vent grilles at the plinth
   for(let x=BL+64;x<BR-64;x+=180){c.fillStyle='#3a352c';c.fillRect(x,STREET-14,26,9);
     c.strokeStyle='#6a6254';c.lineWidth=1;for(let i=1;i<4;i++){c.beginPath();c.moveTo(x+i*6.5,STREET-14);c.lineTo(x+i*6.5,STREET-5);c.stroke();}}
@@ -1780,7 +1807,14 @@ function render(time){
     ctx.strokeStyle='#6e5a42';ctx.lineWidth=3;ctx.strokeRect(wn.x,wn.y,wn.w,wn.h);
     ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(wn.x,wn.y+wn.h/2);ctx.lineTo(wn.x+wn.w,wn.y+wn.h/2);ctx.moveTo(wn.x+wn.w/2,wn.y);ctx.lineTo(wn.x+wn.w/2,wn.y+wn.h);ctx.stroke();
     ctx.fillStyle=wn.curt; ctx.fillRect(wn.x-5,wn.y-3,6,wn.h+6); ctx.fillRect(wn.x+wn.w-1,wn.y-3,6,wn.h+6);
-    ctx.fillRect(wn.x-6,wn.y-5,wn.w+12,4);}
+    ctx.fillRect(wn.x-6,wn.y-5,wn.w+12,4);
+    if(wn.tier>=1){ctx.fillStyle='#c9a24a';                         // residents: gilt corner blocks + pelmet rail
+      ctx.fillRect(wn.x-5,wn.y-4,4,4);ctx.fillRect(wn.x+wn.w+1,wn.y-4,4,4);
+      ctx.fillRect(wn.x-5,wn.y+wn.h,4,4);ctx.fillRect(wn.x+wn.w+1,wn.y+wn.h,4,4);
+      ctx.fillRect(wn.x-6,wn.y-7,wn.w+12,2);}
+    if(wn.tier===2){ctx.strokeStyle='#c9a24a';ctx.lineWidth=2;      // penthouse: gilt swag arch + rosette
+      ctx.beginPath();ctx.moveTo(wn.x-4,wn.y-3);ctx.quadraticCurveTo(wn.x+wn.w/2,wn.y-15,wn.x+wn.w+4,wn.y-3);ctx.stroke();
+      ctx.fillStyle='#c9a24a';ctx.beginPath();ctx.arc(wn.x+wn.w/2,wn.y-9,2.2,0,7);ctx.fill();}}
   // furniture layer sits in front of the window glass
   ctx.drawImage(fgc,0,0);
   // lift cab interior (sliding doors are drawn after the people, so riders show inside)
@@ -2037,7 +2071,7 @@ function drawLighting(h,dk,time,day){
   const winClip=c2=>{c2.beginPath();
     for(const wn of intWins)c2.rect(wn.x,wn.y,wn.w,wn.h);
     for(let fi=1;fi<7;fi++){const ym=(FLOORS[fi].y+FLOORS[fi+1].y)/2;
-      c2.moveTo(778,ym-22);c2.arc(770,ym-22,8,0,7);}
+      c2.moveTo(PORTX+8,ym-22);c2.arc(PORTX,ym-22,8,0,7);}
     c2.clip();};
   const punch=L=>{const rg=dctx.createRadialGradient(L.x,L.y,2,L.x,L.y,L.r);
     rg.addColorStop(0,'rgba(0,0,0,0.95)');rg.addColorStop(1,'rgba(0,0,0,0)');
