@@ -27,6 +27,12 @@ rim, brick shell, and seven furnished floors of little people going about their 
   spells, rain that sometimes sets in for hours, summer thunderstorms with lightning, and
   winter snow that settles on the pavement, the parapet and the sign.
 
+- **The Front**: a toggle puts the art deco facade on the building — bronze crown, gilt
+  sunburst, teal chevron spandrels, stepped lintels — and you watch the residents through
+  the windows instead. A full street runs past: kerb and road, flower stall, benches,
+  traffic signs, power poles and sagging cables.
+
+![The front of the hotel](screenshots/front.jpg)
 ![Seasons and weather](screenshots/weather.jpg)
 ![Dusk sequence](screenshots/dusk.jpg)
 ![Night at the Grand Meridian](screenshots/night.jpg)

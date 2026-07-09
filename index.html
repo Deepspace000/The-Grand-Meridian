@@ -81,14 +81,14 @@
 
 <div class="panel" id="hud">
   <h1 id="hudTitle">The Grand Meridian<span class="tapnote">— tap to close —</span></h1>
-  <div class="sub">Residential &amp; Tourist Hotel · est. 1927</div>
+  <div class="sub">Residential &amp; Tourist Hotel · est. 1902</div>
   <div id="daylabel">Day 1 · Monday</div>
   <div id="wxline">☀ Fair skies</div>
   <div id="clock">07:30</div>
   <div style="margin:7px 0 4px">
     <span class="btn" id="spd0">❚❚</span><span class="btn on" id="spd1">▶</span><span class="btn" id="spd2">▶▶</span><span class="btn" id="spd3">▶▶▶</span><span class="btn" id="spdR" title="Run on your actual local clock — one minute per minute">🕰 real</span>
   </div>
-  <div style="margin:0 0 6px"><span class="btn" id="menuBtn">🍽 Hotel Menu</span></div>
+  <div style="margin:0 0 6px"><span class="btn" id="menuBtn">🍽 Hotel Menu</span><span class="btn" id="frontBtn" title="Put the front on the hotel">🏢 Front</span></div>
   <div class="sub" style="font-size:10px;margin-bottom:5px">scroll / pinch to zoom · drag to pan</div>
   <div class="money" id="moneybox"></div>
 </div>
@@ -97,7 +97,7 @@
   <div id="menuGrab">☰ &nbsp;Hotel Menu — drag to move</div>
   <span id="menuClose">✕</span>
   <h2>Café Meridian</h2>
-  <div class="est">The Grand Meridian Hotel · est. 1927 · Rosa Marchetti, Head Chef</div>
+  <div class="est">The Grand Meridian Hotel · est. 1902 · Rosa Marchetti, Head Chef</div>
   <div class="rule">❦ ❦ ❦</div>
 
   <div class="svc" id="svcBrek">
@@ -278,7 +278,14 @@ const CLOUDS=[]; for(let i=0;i<12;i++)CLOUDS.push({x:rnd(0,W),y:rnd(25,250),s:rn
 
 // ============================== SEASONS & WEATHER ==============================
 const SEASONS=['Spring','Summer','Autumn','Winter'];
-const seasonOf=day=>Math.floor(((day-1)%28)/7);          // one week per season
+function realSeason(){ // in real-time mode the season follows your actual calendar, hemisphere-aware
+  const m=new Date().getMonth();
+  const tz=(Intl.DateTimeFormat().resolvedOptions().timeZone||'');
+  const south=/Australia|Auckland|Johannesburg|Sao_Paulo|Argentina|Santiago|Montevideo|Harare|Windhoek|Fiji|Port_Moresby|Noumea/.test(tz);
+  const n=[3,3,0,0,0,1,1,1,2,2,2,3][m];   // Dec–Feb winter, Mar–May spring… (northern)
+  return south?(n+2)%4:n;
+}
+const seasonOf=day=>realTime?realSeason():Math.floor(((day-1)%28)/7); // one week per season, or the real one
 const yearOf=day=>Math.floor((day-1)/28)+1;
 const dayOfSeason=day=>((day-1)%7)+1;
 const weather={type:'clear',intensity:0.1,until:0,wind:0,flash:0,nextBolt:0,boltPts:null,long:false};
@@ -337,8 +344,9 @@ function drawWeather(rain,snow,dk){
   // a grey wash over the whole scene when the weather is filthy
   if(weather.intensity>0.12){ctx.fillStyle='rgba(80,88,100,'+(0.20*weather.intensity)+')';ctx.fillRect(0,0,W,H);}
   if(rain<=0&&snow<=0)return;
-  ctx.save();                                    // keep the rooms dry: clip out the interior
-  ctx.beginPath();ctx.rect(0,0,W,H);ctx.rect(IL,FLOORS[TOPFL].top,IR-IL,FLOORS[0].y+8-FLOORS[TOPFL].top);
+  ctx.save();                                    // keep the rooms dry: clip out the interior (unless the front is on)
+  ctx.beginPath();ctx.rect(0,0,W,H);
+  if(!frontOn)ctx.rect(IL,FLOORS[TOPFL].top,IR-IL,FLOORS[0].y+8-FLOORS[TOPFL].top);
   ctx.clip('evenodd');
   if(rain>0){const n=Math.min(RAIN.length,Math.floor(RAIN.length*rain));
     for(let i=0;i<n;i++){const d=RAIN[i];
@@ -612,6 +620,13 @@ function buildStatic(){
   // street & sidewalk
   fr(g,0,STREET,W,12,'#7d7466'); fr(g,0,STREET,W,3,'#948a7a');
   g.fillStyle='rgba(0,0,0,.15)'; for(let x=0;x<W;x+=46)g.fillRect(x,STREET+2,1.5,10);
+  // kerb & road either side of the building's footings (the facade view completes the middle)
+  for(const[rx1,rx2]of[[0,BL-14],[BR+14,W]]){
+    fr(g,rx1,STREET+12,rx2-rx1,5,'#55575c');
+    fr(g,rx1,STREET+17,rx2-rx1,35,'#3a3d42');
+    g.fillStyle='rgba(0,0,0,.25)'; g.fillRect(rx1,STREET+17,rx2-rx1,4);
+    g.fillStyle='#d8d5c8'; for(let x=10;x<W;x+=64)if(x>rx1&&x+26<rx2)g.fillRect(x,STREET+33,26,2.5);
+  }
   // ============ INTERIORS ============
   const F=FLOORS;
   // --- Basement ---
@@ -917,15 +932,118 @@ function buildShell(){
   }
   g.fillStyle='#8a3428'; g.fillRect(80,STREET-16,10,16); g.fillStyle='#a84438'; g.beginPath();g.arc(85,STREET-17,6,3.14,6.28);g.fill(); // hydrant
   g.fillStyle='#5e4126'; g.fillRect(1252,STREET-16,54,4); g.fillRect(1252,STREET-28,54,4); g.fillRect(1256,STREET-12,4,12); g.fillRect(1298,STREET-12,4,12); // bench
-  for(const tx of[220,1290,1440]){g.fillStyle='#4a3320'; g.fillRect(tx-3,STREET-46,7,46);
+  g.fillStyle='#5e4126'; g.fillRect(96,STREET-16,50,4); g.fillRect(96,STREET-28,50,4); g.fillRect(100,STREET-12,4,12); g.fillRect(138,STREET-12,4,12); // second bench
+  for(const tx of[55,220,1290,1440]){g.fillStyle='#4a3320'; g.fillRect(tx-3,STREET-46,7,46);
     g.fillStyle='#3f6b3a'; g.beginPath();g.arc(tx,STREET-58,22,0,7);g.arc(tx-14,STREET-46,15,0,7);g.arc(tx+14,STREET-46,15,0,7);g.fill();}
+  // flower stall
+  {const sx=1352;
+   fr(g,sx,STREET-30,46,30,'#6e4a28'); fr(g,sx+3,STREET-27,40,12,'#3c2c1a');
+   fr(g,sx,STREET-15,46,4,'#8f6238');
+   for(let i=0;i<5;i++){g.fillStyle=pick(['#c85a70','#e8c23a','#b06ac8','#e8855a']);g.beginPath();g.arc(sx+8+i*8,STREET-18,2.5,0,7);g.fill();}
+   fr(g,sx-3,STREET-40,52,3,'#7a3a30');
+   for(let i=0;i<6;i++){g.fillStyle=i%2?'#e8e2d0':'#a03a30';
+     g.beginPath();g.moveTo(sx-3+i*9,STREET-37);g.lineTo(sx+6+i*9,STREET-37);g.lineTo(sx+1.5+i*9,STREET-30);g.closePath();g.fill();}}
+  // traffic signs
+  fr(g,186.5,STREET-42,3,42,'#4a4a48');
+  g.fillStyle='#c8332a'; g.beginPath();g.arc(188,STREET-48,8,0,7);g.fill();
+  g.strokeStyle='#f0ede4';g.lineWidth=1.5;g.beginPath();g.arc(188,STREET-48,6.4,0,7);g.stroke();
+  fr(g,183,STREET-49.4,10,2.8,'#f0ede4');
+  fr(g,1310.5,STREET-40,3,40,'#4a4a48');
+  g.save();g.translate(1312,STREET-48);g.rotate(Math.PI/4);
+  g.fillStyle='#e8c23a';g.fillRect(-6.5,-6.5,13,13);g.strokeStyle='#4a3a10';g.lineWidth=1.2;g.strokeRect(-6.5,-6.5,13,13);g.restore();
+  g.fillStyle='#3a2a10';g.font='bold 9px Georgia';g.fillText('!',1312,STREET-44);
+  // power poles with crossarms and insulators; cables run off each side
+  for(const px of[28,1418]){
+    fr(g,px-2.5,STREET-140,5,140,'#5a4632');
+    fr(g,px-14,STREET-134,28,3,'#4a3a28'); fr(g,px-11,STREET-124,22,3,'#4a3a28');
+    g.fillStyle='#e8e2d0'; for(const ix of[-12,-4,4,12])g.fillRect(px+ix-1,STREET-137,2,3);}
+  g.strokeStyle='rgba(30,30,34,.85)'; g.lineWidth=1.6;
+  for(const dy of[0,7]){
+    g.beginPath();g.moveTo(-10,STREET-146+dy);g.quadraticCurveTo(9,STREET-142+dy,28,STREET-137+dy);g.stroke();
+    g.beginPath();g.moveTo(1418,STREET-137+dy);g.quadraticCurveTo(1462,STREET-142+dy,1510,STREET-147+dy);g.stroke();}
 }
 buildStatic();
+// ---- the FRONT: a full brick facade you can toggle on, seeing in through the windows ----
+let frontOn=false;
+const facadeCv=document.createElement('canvas'); facadeCv.width=W; facadeCv.height=H;
+function buildFacade(){
+  const c=facadeCv.getContext('2d'); const TOPB=300;
+  // brick front over the whole cutaway
+  c.fillStyle='#8f3b2e'; c.fillRect(BL-6,TOPB,BR-BL+12,STREET-TOPB);
+  c.fillStyle='rgba(60,20,12,.28)';
+  for(let y=TOPB;y<STREET;y+=9){c.fillRect(BL-6,y,BR-BL+12,1.2);
+    for(let x=BL-6+((y/9|0)%2)*11;x<BR+6;x+=22)c.fillRect(x,y,1.2,9);}
+  c.fillStyle='rgba(255,190,140,.07)';
+  for(let i=0;i<400;i++)c.fillRect(rnd(BL-6,BR+6-8),rnd(TOPB,STREET-4),ri(6,10),ri(3,4));
+  // stone string course at every floor line + plinth
+  c.fillStyle='#b8a88c'; for(let fi=1;fi<8;fi++)c.fillRect(BL-6,FLOORS[fi].y+2,BR-BL+12,4);
+  c.fillStyle='#9a8f7c'; c.fillRect(BL-10,STREET-26,BR-BL+20,26);
+  c.fillStyle='#8a7f6c'; c.fillRect(BL-10,STREET-26,BR-BL+20,4);
+  // kerb, road & earth across the footprint (hides the basement cross-section)
+  c.fillStyle='#55575c'; c.fillRect(BL-14,STREET+12,BR-BL+28,5);
+  c.fillStyle='#3a3d42'; c.fillRect(BL-14,STREET+17,BR-BL+28,35);
+  c.fillStyle='rgba(0,0,0,.25)'; c.fillRect(BL-14,STREET+17,BR-BL+28,4);
+  c.fillStyle='#d8d5c8'; for(let x=10;x<W;x+=64)if(x+26>BL-14&&x<BR+14)c.fillRect(x,STREET+33,26,2.5);
+  c.fillStyle='#4a3524'; c.fillRect(BL-14,STREET+52,BR-BL+28,H-(STREET+52));
+  c.fillStyle='#3a2a1c'; for(let i=0;i<40;i++){c.beginPath();c.arc(rnd(BL,BR),rnd(STREET+58,H-6),rnd(1,4),0,7);c.fill();}
+  // ---- art deco dressing: gold, bronze and teal ----
+  const GOLD='#c9a24a', TEAL='#2e6e6a', BRONZE='#6e4a28';
+  // fluted vertical piers with stepped caps and bronze bases
+  for(const px of[BL+2,518,698,800,988,BR-14]){
+    c.fillStyle='#9c4636'; c.fillRect(px,TOPB+14,12,STREET-26-(TOPB+14));
+    c.fillStyle='rgba(255,255,255,.10)'; c.fillRect(px+2,TOPB+14,2,STREET-42-(TOPB+14)); c.fillRect(px+7,TOPB+14,2,STREET-42-(TOPB+14));
+    c.fillStyle=GOLD; c.fillRect(px-2,TOPB+10,16,4); c.fillRect(px+1,TOPB+6,10,4); c.fillRect(px+4,TOPB+2,4,4);
+    c.fillStyle=BRONZE; c.fillRect(px-2,STREET-32,16,6);}
+  // bronze crown band with gilt reeding
+  c.fillStyle=BRONZE; c.fillRect(BL-6,TOPB,BR-BL+12,12);
+  c.fillStyle=GOLD; for(let x=BL+4;x<BR-8;x+=16){c.fillRect(x,TOPB+2,3,8); c.fillRect(x+7,TOPB+4,3,6);}
+  // teal-and-gold sunburst medallion over the centre
+  c.fillStyle=TEAL; c.fillRect(696,TOPB,108,12);
+  c.strokeStyle=GOLD; c.lineWidth=2;
+  for(let a=-2.8;a<=-0.34;a+=0.35){c.beginPath();c.moveTo(750,TOPB+11);c.lineTo(750+Math.cos(a)*24,TOPB+11+Math.sin(a)*24);c.stroke();}
+  c.fillStyle=GOLD; c.beginPath();c.arc(750,TOPB+11,5,3.14,6.28);c.fill();
+  // teal chevron spandrel panels beneath every window
+  for(const wn of intWins){
+    const sx=wn.x-4, sy=wn.y+wn.h+6, sw=wn.w+8;
+    c.fillStyle=TEAL; c.fillRect(sx,sy,sw,10);
+    c.strokeStyle=GOLD; c.lineWidth=1.2; c.beginPath();
+    for(let zx=sx+2;zx<sx+sw-6;zx+=8){c.moveTo(zx,sy+8);c.lineTo(zx+4,sy+2);c.lineTo(zx+8,sy+8);}
+    c.stroke(); c.strokeStyle='rgba(0,0,0,.3)'; c.lineWidth=1; c.strokeRect(sx+0.5,sy+0.5,sw-1,9);}
+  // gilt zigzag along every string course
+  c.strokeStyle='rgba(201,162,74,.55)'; c.lineWidth=1;
+  for(let fi=2;fi<8;fi++){const yz=FLOORS[fi].y+4; c.beginPath();
+    for(let x=BL+2;x<BR-8;x+=10){c.moveTo(x,yz+1.5);c.lineTo(x+5,yz-1.5);c.lineTo(x+10,yz+1.5);} c.stroke();}
+  // punch every window through to the rooms behind
+  c.save(); c.globalCompositeOperation='destination-out';
+  for(const wn of intWins)c.fillRect(wn.x-1,wn.y-1,wn.w+2,wn.h+2);
+  for(let fi=1;fi<7;fi++){const ym=(FLOORS[fi].y+FLOORS[fi+1].y)/2;   // stairwell portholes
+    c.beginPath();c.arc(770,ym-22,8,0,7);c.fill();}
+  c.restore();
+  // window dressings: stone surrounds, stepped gold lintels, a whisper of glass
+  for(const wn of intWins){
+    c.fillStyle='#b8a88c'; c.fillRect(wn.x-5,wn.y-7,wn.w+10,5); c.fillRect(wn.x-6,wn.y+wn.h+1,wn.w+12,4);
+    c.fillStyle=GOLD; c.fillRect(wn.x+wn.w/2-9,wn.y-10,18,3); c.fillRect(wn.x+wn.w/2-5,wn.y-13,10,3); c.fillRect(wn.x+wn.w/2-2,wn.y-15.5,4,2.5);
+    c.strokeStyle='#5a4a3a'; c.lineWidth=2; c.strokeRect(wn.x-1,wn.y-1,wn.w+2,wn.h+2);
+    c.fillStyle='rgba(200,220,240,.13)'; c.fillRect(wn.x,wn.y,wn.w,wn.h);
+    c.fillStyle='rgba(255,255,255,.09)';
+    c.beginPath();c.moveTo(wn.x+2,wn.y+wn.h);c.lineTo(wn.x+wn.w*0.45,wn.y);c.lineTo(wn.x+wn.w*0.62,wn.y);c.lineTo(wn.x+wn.w*0.2,wn.y+wn.h);c.fill();}
+  for(let fi=1;fi<7;fi++){const ym=(FLOORS[fi].y+FLOORS[fi+1].y)/2;
+    c.strokeStyle='#c9a24a'; c.lineWidth=2; c.beginPath();c.arc(770,ym-22,8.5,0,7);c.stroke();
+    c.fillStyle='rgba(200,220,240,.13)'; c.beginPath();c.arc(770,ym-22,8,0,7);c.fill();}
+  // basement vent grilles at the plinth
+  for(let x=BL+64;x<BR-64;x+=180){c.fillStyle='#3a352c';c.fillRect(x,STREET-14,26,9);
+    c.strokeStyle='#6a6254';c.lineWidth=1;for(let i=1;i<4;i++){c.beginPath();c.moveTo(x+i*6.5,STREET-14);c.lineTo(x+i*6.5,STREET-5);c.stroke();}}
+  // the long cable span sags across the front between the poles
+  c.strokeStyle='rgba(30,30,34,.85)'; c.lineWidth=1.6;
+  for(const dy of[0,7])
+    {c.beginPath();c.moveTo(28,STREET-137+dy);c.quadraticCurveTo(723,STREET-96+dy,1418,STREET-137+dy);c.stroke();}
+}
+buildFacade();
 // ============================== PEOPLE ==============================
 const SKINS=['#e8b48c','#d9a06e','#c68a5c','#8a5a3a','#6e4428','#f0c39a'];
 const HAIRS=['#2a1c10','#4a3320','#7a5230','#b8b0a0','#d8cdb4','#8a4a2a','#1c1c1c'];
 const people=[];
-// ---- who's who: age, birthday, nationality (the year is 1931) ----
+// ---- who's who: age, birthday, nationality (the year is 1926) ----
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
 const NATS=['English','English','English','Scottish','Irish','Welsh','American','French','Italian','Dutch','Canadian','Australian'];
 const BIOS={ // name → [age, 'day Month', nationality]
@@ -969,9 +1087,9 @@ function makePerson(o){const p=Object.assign({
   speed:rnd(42,58),phase:rnd(0,7),queue:[],climbY:null,outUntil:0,room:null,
   skin:pick(SKINS),hair:pick(HAIRS),shirt:'#8a6a4a',pants:'#4a3a2c',hat:null,dress:false,apron:false,
   sleeping:false,bedX:0,bedFl:0,meta:{}},o);
- if(BIOS[p.name]){const[a,bd,nat]=BIOS[p.name]; p.bio={age:a,born:bd+' '+(1931-a),nat};}
+ if(BIOS[p.name]){const[a,bd,nat]=BIOS[p.name]; p.bio={age:a,born:bd+' '+(1926-a),nat};}
  else if(p.kind!=='ambient'){const a=p.child?ri(6,11):(p.kind==='tradie'?ri(28,58):ri(21,72));
-   p.bio={age:a,born:ri(1,28)+' '+pick(MONTHS)+' '+(1931-a),nat:pick(NATS)};}
+   p.bio={age:a,born:ri(1,28)+' '+pick(MONTHS)+' '+(1926-a),nat:pick(NATS)};}
  people.push(p); return p;}
 
 function footY(p){ if(p.floor==='street')return STREET;
@@ -1656,8 +1774,8 @@ function render(time){
     ctx.fillStyle='#9c3f38'; ctx.beginPath(); ctx.ellipse(p.x,y-9,17,6,0,3.14,6.28); ctx.fill();
     ctx.fillStyle=p.skin; ctx.beginPath(); ctx.arc(p.x-19,y-12,4,0,7); ctx.fill();
     if(Math.random()<0.008)puff(p.x-14,y-22,'note','z');}
-  // people
-  for(const p of people)drawPerson(p,time);
+  // people (street folk drawn after the facade when the front is on)
+  for(const p of people){if(frontOn&&p.floor==='street')continue; drawPerson(p,time);}
   // lift doors slide shut over the riders
   {const cabH=58, cl=LIFT_L+5, cw=LIFT_R-LIFT_L-10, pw=cw/2*(1-lift.door);
    ctx.fillStyle='#4a4038';
@@ -1676,6 +1794,8 @@ function render(time){
    ctx.fillRect(520,y-25,4,1.5);}
   drawCatAndBirds(time,h);
   drawParticles();
+  if(frontOn){ctx.drawImage(facadeCv,0,0);
+    for(const p of people)if(p.floor==='street')drawPerson(p,time);}
   drawWeather(wp.rain,wp.snow,dk);
   drawLighting(h,dk,time,day);
   // lightning
@@ -1899,7 +2019,9 @@ let uiT=0;
 function updateUI(){
   $('clock').textContent=clockStr()+(realTime?' · live':'');
   const d=dayNow(), sn=seasonOf(d);
-  $('daylabel').textContent=WEEK[(d-1)%7]+' · '+SEASONS[sn]+' '+dayOfSeason(d)+' · Year '+yearOf(d)+' · Day '+d;
+  if(realTime){const rd=new Date();   // your calendar, a hundred years ago exactly
+    $('daylabel').textContent=WEEK[(rd.getDay()+6)%7]+' · '+rd.getDate()+' '+MONTHS[rd.getMonth()]+' '+(rd.getFullYear()-100)+' · '+SEASONS[sn];}
+  else $('daylabel').textContent=WEEK[(d-1)%7]+' · '+SEASONS[sn]+' '+dayOfSeason(d)+' · Year '+yearOf(d)+' · Day '+d;
   const wxIcons={clear:'☀ Fair skies',overcast:'☁ Overcast',rain:weather.long?'🌧 Steady rain':'🌧 Rain',
     snow:weather.long?'❄ Steady snow':'❄ Snow',storm:sn===3?'🌨 Snowstorm':'⛈ Thunderstorm'};
   $('wxline').textContent=wxIcons[weather.type]||'';
@@ -1948,6 +2070,8 @@ $('spdR').onclick=()=>{
  const showHud=e=>{e.preventDefault();$('hud').style.display='block';$('hudTab').style.display='none';};
  $('hudTitle').addEventListener('pointerup',hideHud);
  $('hudTab').addEventListener('pointerup',showHud);}
+// the front of the hotel, on and off
+$('frontBtn').onclick=()=>{frontOn=!frontOn;$('frontBtn').classList.toggle('on',frontOn);};
 // hotel menu card
 $('menuBtn').onclick=()=>{const m=$('menuCard');m.style.display=m.style.display==='block'?'none':'block';};
 $('menuClose').onclick=()=>{$('menuCard').style.display='none';};
@@ -1973,6 +2097,7 @@ addEventListener('mousemove',e=>{
   const wx=(e.clientX*devicePixelRatio-camX)/S, wy=(e.clientY*devicePixelRatio-camY)/S;
   let best=null,bd=24;
   for(const p of people){if(p.floor===null||p.kind==='ambient')continue;
+    if(frontOn&&p.floor!=='street')continue;   // can't see them through the brick
     const d=Math.hypot(p.x-wx,footY(p)-17-wy); if(d<bd){bd=d;best=p;}}
   if(best){tip.style.display='block';
     tip.style.left=(e.clientX+14)+'px'; tip.style.top=(e.clientY+10)+'px';
