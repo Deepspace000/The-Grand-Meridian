@@ -86,7 +86,7 @@
   <div id="wxline">☀ Fair skies</div>
   <div id="clock">07:30</div>
   <div style="margin:7px 0 4px">
-    <span class="btn" id="spd0">❚❚</span><span class="btn on" id="spd1">▶</span><span class="btn" id="spd2">▶▶</span><span class="btn" id="spd3">▶▶▶</span>
+    <span class="btn" id="spd0">❚❚</span><span class="btn on" id="spd1">▶</span><span class="btn" id="spd2">▶▶</span><span class="btn" id="spd3">▶▶▶</span><span class="btn" id="spdR" title="Run on your actual local clock — one minute per minute">🕰 real</span>
   </div>
   <div style="margin:0 0 6px"><span class="btn" id="menuBtn">🍽 Hotel Menu</span></div>
   <div class="sub" style="font-size:10px;margin-bottom:5px">scroll / pinch to zoom · drag to pan</div>
@@ -232,6 +232,9 @@ function fmt$(n){const s=Math.abs(n).toLocaleString('en-US',{maximumFractionDigi
 // ============================== TIME ==============================
 let tMin=7*60+30;           // minutes since Day1 00:00 (starts 07:30 Monday)
 let speedIdx=1; const SPEEDS=[0,4,14,55]; // game-minutes per real second
+let realTime=false;         // 🕰 real mode: the hotel keeps your actual local time
+function localDayMinutes(){const d=new Date();
+  return d.getHours()*60+d.getMinutes()+d.getSeconds()/60+d.getMilliseconds()/60000;}
 const WEEK=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 const hourNow=()=> (tMin/60)%24;
 const dayNow=()=> Math.floor(tMin/1440)+1;
@@ -1853,7 +1856,7 @@ function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;');}
 function row(nm,rl,st){return '<tr><td class="nm">'+esc(nm)+'</td><td class="rl">'+esc(rl)+'</td><td class="st">'+esc(st)+'</td></tr>';}
 let uiT=0;
 function updateUI(){
-  $('clock').textContent=clockStr();
+  $('clock').textContent=clockStr()+(realTime?' · live':'');
   const d=dayNow(), sn=seasonOf(d);
   $('daylabel').textContent=WEEK[(d-1)%7]+' · '+SEASONS[sn]+' '+dayOfSeason(d)+' · Year '+yearOf(d)+' · Day '+d;
   const wxIcons={clear:'☀ Fair skies',overcast:'☁ Overcast',rain:weather.long?'🌧 Steady rain':'🌧 Rain',
@@ -1878,8 +1881,23 @@ function updateUI(){
   $('svcDinner').classList.toggle('now',hh>=18&&hh<21.5);
 }
 // speed buttons
-for(let i=0;i<4;i++)$('spd'+i).onclick=()=>{speedIdx=i;
+for(let i=0;i<4;i++)$('spd'+i).onclick=()=>{speedIdx=i; realTime=false;
+  $('spdR').classList.remove('on');
   for(let k=0;k<4;k++)$('spd'+k).classList.toggle('on',k===i);};
+// 🕰 real mode: jump forward to your local time of day, then tick minute for minute
+$('spdR').onclick=()=>{
+  realTime=!realTime;
+  $('spdR').classList.toggle('on',realTime);
+  for(let k=0;k<4;k++)$('spd'+k).classList.toggle('on',!realTime&&k===speedIdx);
+  if(realTime){
+    const base=Math.floor(tMin/1440)*1440;
+    let target=base+localDayMinutes();
+    if(target<tMin)target+=1440;          // only ever wind the clock forwards
+    tMin=target;
+    lastMinInt=Math.floor(tMin); lastHour=Math.floor(hourNow()); lastDay=dayNow(); // no retroactive charges
+    logEvent('The lobby clock is set to local time — '+clockStr()+'.');
+  } else { speedIdx=1; $('spd1').classList.add('on'); }
+};
 // tap the register title to dismiss the panel; a little bookmark brings it back
 {const hideReg=e=>{e.preventDefault();$('register').style.display='none';$('regTab').style.display='block';};
  const showReg=e=>{e.preventDefault();$('register').style.display='block';$('regTab').style.display='none';};
@@ -1933,11 +1951,16 @@ let lastT=performance.now();
 function frame(now){
   const dt=Math.min(0.05,(now-lastT)/1000); lastT=now;
   const time=now/1000;
-  const gm=SPEEDS[speedIdx]*dt;          // game-minutes this frame
-  tMin+=gm;
+  let gm;                                 // game-minutes this frame
+  if(realTime){                           // stay pinned to the wall clock — no drift, ever
+    const base=Math.floor(tMin/1440)*1440;
+    let target=base+localDayMinutes();
+    while(target<tMin-1)target+=1440;     // roll forward past midnight, never backwards
+    gm=Math.max(0,target-tMin); tMin=target;
+  } else { gm=SPEEDS[speedIdx]*dt; tMin+=gm; }
   const h=hourNow(), day=dayNow();
-  const wm=speedIdx===0?0:clamp(1+SPEEDS[speedIdx]/9,1,5); // walk speed multiplier
-  if(speedIdx>0){
+  const wm=realTime?1:(speedIdx===0?0:clamp(1+SPEEDS[speedIdx]/9,1,5)); // walk speed multiplier
+  if(speedIdx>0||realTime){
     economyTick();
     updateLift(dt);
     for(const p of people){
