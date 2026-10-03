@@ -677,12 +677,23 @@ function buildStatic(){
   // street & sidewalk
   fr(g,0,STREET,W,12,'#7d7466'); fr(g,0,STREET,W,3,'#948a7a');
   g.fillStyle='rgba(0,0,0,.15)'; for(let x=0;x<W;x+=46)g.fillRect(x,STREET+2,1.5,10);
+  // grime, stains and wear on the pavement
+  for(let i=0;i<55;i++){g.fillStyle='rgba(40,32,22,'+rnd(0.06,0.16)+')';
+    g.beginPath();g.ellipse(rnd(0,W),rnd(STREET+1,STREET+11),rnd(3,13),rnd(1,3),0,0,7);g.fill();}
+  g.strokeStyle='rgba(0,0,0,.12)'; g.lineWidth=0.8;   // cracked slabs here and there
+  for(let i=0;i<14;i++){const cx4=rnd(0,W);g.beginPath();g.moveTo(cx4,STREET+1);
+    g.lineTo(cx4+rnd(-5,5),STREET+6);g.lineTo(cx4+rnd(-8,8),STREET+11);g.stroke();}
   // kerb & road either side of the building's footings (the facade view completes the middle)
   for(const[rx1,rx2]of[[0,BL-14],[BR+14,W]]){
     fr(g,rx1,STREET+12,rx2-rx1,5,'#55575c');
     fr(g,rx1,STREET+17,rx2-rx1,35,'#3a3d42');
     g.fillStyle='rgba(0,0,0,.25)'; g.fillRect(rx1,STREET+17,rx2-rx1,4);
+    g.fillStyle='rgba(0,0,0,.10)'; g.fillRect(rx1,STREET+25,rx2-rx1,3); g.fillRect(rx1,STREET+41,rx2-rx1,3); // wheel-worn tracks
     g.fillStyle='#d8d5c8'; for(let x=10;x<W;x+=64)if(x>rx1&&x+26<rx2)g.fillRect(x,STREET+33,26,2.5);
+    for(let i=0;i<6;i++){g.fillStyle='rgba(0,0,0,'+rnd(0.12,0.22)+')';                          // oil stains
+      g.beginPath();g.ellipse(rnd(rx1+10,rx2-10),rnd(STREET+22,STREET+46),rnd(4,11),rnd(1.5,3.5),0,0,7);g.fill();}
+    for(let i=0;i<3;i++){g.fillStyle='rgba(70,74,80,.5)';                                        // tar patches
+      g.fillRect(rnd(rx1+8,rx2-24),rnd(STREET+20,STREET+42),rnd(10,20),rnd(4,7));}
   }
   // ============ INTERIORS ============
   const F=FLOORS;
@@ -971,6 +982,13 @@ function buildShell(){
     for(let x=BL-6+((y/9|0)%2)*11;x<BR+6;x+=22)c.fillRect(x,y,1.2,9);}
   c.fillStyle='rgba(255,190,140,.07)';
   for(let i=0;i<400;i++)c.fillRect(rnd(BL-6,BR+6-8),rnd(TOPB,STREET-4),ri(6,10),ri(3,4));
+  // weathering: soot blotches, odd discoloured bricks, grime rising from the pavement
+  for(let i=0;i<70;i++){c.fillStyle='rgba(30,20,14,'+rnd(0.04,0.12)+')';
+    c.beginPath();c.ellipse(rnd(BL-6,BR+6),rnd(TOPB,STREET-8),rnd(8,26),rnd(3,10),0,0,7);c.fill();}
+  for(let i=0;i<130;i++){const bx=BL-6+Math.floor(rnd(0,(BR-BL+12)/11))*11, by=TOPB+Math.floor(rnd(0,(STREET-TOPB)/9))*9;
+    c.fillStyle=Math.random()<0.5?'rgba(122,52,36,.45)':'rgba(58,26,18,.38)';
+    c.fillRect(bx+1,by+1,9,7);}
+  for(let i=0;i<3;i++){c.fillStyle='rgba(25,20,14,'+(0.12-i*0.035)+')';c.fillRect(BL-10,STREET-26-i*8,BR-BL+20,8);}
   // stone plinth + cornices
   c.fillStyle='#9a8f7c'; c.fillRect(BL-10,STREET-26,BR-BL+20,26);
   c.fillStyle='#8a7f6c'; c.fillRect(BL-10,STREET-26,BR-BL+20,4);
@@ -1117,6 +1135,13 @@ function buildFacade(){
     for(let x=BL-6+((y/9|0)%2)*11;x<BR+6;x+=22)c.fillRect(x,y,1.2,9);}
   c.fillStyle='rgba(255,190,140,.07)';
   for(let i=0;i<400;i++)c.fillRect(rnd(BL-6,BR+6-8),rnd(TOPB,STREET-4),ri(6,10),ri(3,4));
+  // weathering to match the shell: soot, odd bricks, grime at the base
+  for(let i=0;i<70;i++){c.fillStyle='rgba(30,20,14,'+rnd(0.04,0.12)+')';
+    c.beginPath();c.ellipse(rnd(BL-6,BR+6),rnd(TOPB,STREET-8),rnd(8,26),rnd(3,10),0,0,7);c.fill();}
+  for(let i=0;i<130;i++){const bx=BL-6+Math.floor(rnd(0,(BR-BL+12)/11))*11, by=TOPB+Math.floor(rnd(0,(STREET-TOPB)/9))*9;
+    c.fillStyle=Math.random()<0.5?'rgba(122,52,36,.45)':'rgba(58,26,18,.38)';
+    c.fillRect(bx+1,by+1,9,7);}
+  for(let i=0;i<3;i++){c.fillStyle='rgba(25,20,14,'+(0.12-i*0.035)+')';c.fillRect(BL-10,STREET-26-i*8,BR-BL+20,8);}
   // stone string course at every floor line + plinth
   c.fillStyle='#b8a88c'; for(let fi=1;fi<8;fi++)c.fillRect(BL-6,FLOORS[fi].y+2,BR-BL+12,4);
   c.fillStyle='#9a8f7c'; c.fillRect(BL-10,STREET-26,BR-BL+20,26);
@@ -1126,6 +1151,9 @@ function buildFacade(){
   c.fillStyle='#3a3d42'; c.fillRect(BL-14,STREET+17,BR-BL+28,35);
   c.fillStyle='rgba(0,0,0,.25)'; c.fillRect(BL-14,STREET+17,BR-BL+28,4);
   c.fillStyle='#d8d5c8'; for(let x=10;x<W;x+=64)if(x+26>BL-14&&x<BR+14)c.fillRect(x,STREET+33,26,2.5);
+  c.fillStyle='rgba(0,0,0,.10)'; c.fillRect(BL-14,STREET+25,BR-BL+28,3); c.fillRect(BL-14,STREET+41,BR-BL+28,3);
+  for(let i=0;i<8;i++){c.fillStyle='rgba(0,0,0,'+rnd(0.12,0.22)+')';
+    c.beginPath();c.ellipse(rnd(BL,BR),rnd(STREET+22,STREET+46),rnd(4,11),rnd(1.5,3.5),0,0,7);c.fill();}
   c.fillStyle='#4a3524'; c.fillRect(BL-14,STREET+52,BR-BL+28,H-(STREET+52));
   c.fillStyle='#3a2a1c'; for(let i=0;i<40;i++){c.beginPath();c.arc(rnd(BL,BR),rnd(STREET+58,H-6),rnd(1,4),0,7);c.fill();}
   // ---- art deco dressing: gold, bronze and teal ----
@@ -1192,7 +1220,9 @@ function buildFacade(){
     c.strokeStyle='#5a4a3a'; c.lineWidth=2; c.strokeRect(wn.x-1,wn.y-1,wn.w+2,wn.h+2);
     c.fillStyle='rgba(200,220,240,.13)'; c.fillRect(wn.x,wn.y,wn.w,wn.h);
     c.fillStyle='rgba(255,255,255,.09)';
-    c.beginPath();c.moveTo(wn.x+2,wn.y+wn.h);c.lineTo(wn.x+wn.w*0.45,wn.y);c.lineTo(wn.x+wn.w*0.62,wn.y);c.lineTo(wn.x+wn.w*0.2,wn.y+wn.h);c.fill();}
+    c.beginPath();c.moveTo(wn.x+2,wn.y+wn.h);c.lineTo(wn.x+wn.w*0.45,wn.y);c.lineTo(wn.x+wn.w*0.62,wn.y);c.lineTo(wn.x+wn.w*0.2,wn.y+wn.h);c.fill();
+    c.fillStyle='rgba(30,22,16,.10)';                                  // rain-streaking under the sills
+    c.fillRect(wn.x+2,wn.y+wn.h+6,2,rnd(6,14)); c.fillRect(wn.x+wn.w-5,wn.y+wn.h+6,2,rnd(5,12));}
   for(let fi=1;fi<7;fi++){const ym=(FLOORS[fi].y+FLOORS[fi+1].y)/2;
     c.strokeStyle='#c9a24a'; c.lineWidth=2; c.beginPath();c.arc(PORTX,ym-22,8.5,0,7);c.stroke();
     c.fillStyle='rgba(200,220,240,.13)'; c.beginPath();c.arc(PORTX,ym-22,8,0,7);c.fill();}
@@ -1430,7 +1460,17 @@ function drawPerson(p,time){
     const a2=time*7;ctx.beginPath();ctx.moveTo(12-7*Math.cos(a2),-7-7*Math.sin(a2));ctx.lineTo(12+7*Math.cos(a2),-7+7*Math.sin(a2));ctx.stroke();
     ctx.strokeStyle='#5a4632';ctx.beginPath();ctx.moveTo(4,bodyTop+8);ctx.lineTo(11,-9);ctx.stroke();}
   ctx.restore();
-  if(p.state==='fix'&&Math.random()<0.12)puff(x+rnd(-4,4),y-14,'spark');
+  if(p.state==='fix'&&Math.random()<0.12){
+    if(p.meta.job==='wcleaner'){                                       // soap sparkle up the glass + drips
+      particles.push({x:x+rnd(-6,6),y:rnd(STREET-66,STREET-24),vx:0,vy:0,t:0,life:rnd(.5,.9),kind:'sparkle'});
+      if(Math.random()<0.4)particles.push({x:x+rnd(-5,5),y:STREET-rnd(18,30),vx:0,vy:70,t:0,life:0.3,kind:'drip'});}
+    else puff(x+rnd(-4,4),y-14,'spark');}
+  if(p.meta.bucket&&p.state!=='walk'&&typeof footY==='function'){       // his bucket beside him
+    ctx.save();ctx.translate(p.x,footY(p));
+    ctx.fillStyle='#8a9096';ctx.fillRect(-13,-6,8,6);
+    ctx.fillStyle='rgba(140,190,215,.85)';ctx.fillRect(-12.5,-5.5,7,1.6);
+    ctx.strokeStyle='#666';ctx.lineWidth=1;ctx.beginPath();ctx.arc(-9,-6,4,3.34,6.1);ctx.stroke();
+    ctx.restore();}
   if(p.state==='play'&&Math.random()<0.05)puff(x+10,y-30,'note','♪');
 }
 // ============================== THE CAST ==============================
@@ -1763,6 +1803,31 @@ function updateCallouts(){
     }
   }
 }
+// ---- the window cleaner's round: ground-floor glass, most mornings ----
+const WC_STOPS=[453,551,649,851,949,1047];
+function spawnWindowCleaner(){
+  if(people.some(p=>p.meta.job==='wcleaner'))return;
+  const p=makePerson({name:'Wally Chamois',kind:'tradie',role:'Window cleaner · Chamois & Son',
+    shirt:'#7a8ba0',pants:'#3a4a5a',hat:'cap',hatCol:'#5a6a7a',apron:true,
+    meta:{job:'wcleaner',stage:0,tt:0,gone:false,bucket:true}});
+  p.floor='street'; p.x=Math.random()<0.5?-40:W+40; p.state='walk';
+  p.statusText='here to do the windows';
+  p.queue=[{t:'walk',x:WC_STOPS[0]}];
+  logEvent('Wally Chamois has arrived with his ladder and bucket.');
+}
+function planWcleaner(p,gm){
+  const m=p.meta;
+  if(m.gone)return;
+  if(p.state!=='walk'){
+    p.state='fix'; p.dir=1; p.statusText='cleaning the ground-floor windows';
+    m.tt+=gm;
+    if(m.tt>26){m.tt=0; m.stage++;
+      if(m.stage>=WC_STOPS.length){m.gone=true;
+        cash(-18,'Window round — every pane gleaming (Wally Chamois)',p.x,STREET-40);
+        p.statusText='job done — gleaming';
+        p.queue=[{t:'walk',x:Math.random()<0.5?-60:W+60},{t:'gone'}]; p.state='walk';}
+      else{p.queue=[{t:'walk',x:WC_STOPS[m.stage]}]; p.state='walk';}}}
+}
 // ---- passersby on the pavement: commuters, kids at play ----
 function spawnPasserby(){
   const fromL=Math.random()<0.5, r0=Math.random();
@@ -1802,6 +1867,7 @@ function economyTick(){
   // walk every game-minute since the last tick so timed events never get skipped
   for(let m=mi-stepMins+1;m<=mi;m++){const hm=m%1440, d2=Math.floor(m/1440)+1;
     if(hm===7*60+30)cash(-180,'Provisions & coal delivered');
+    if(hm===9*60+12&&Math.random()<0.6)spawnWindowCleaner();
     if(hm===18*60){const w=STAFF.reduce((s,p)=>s+p.wage,0);cash(-w,'Staff wages paid ('+STAFF.length+' on the books)');}
     if(hm===9*60&&(d2-1)%7===0){for(const a of APTS)cash(a.rent,'Weekly rent — '+(a.id.startsWith('PH')?'Suite ':'Apt ')+a.id,((a.x1+a.x2)/2),FLOORS[a.fl].y-40);}
   }
@@ -1827,9 +1893,23 @@ function economyTick(){
 const darkCv=document.createElement('canvas'); darkCv.width=W; darkCv.height=H; const dctx=darkCv.getContext('2d');
 // ---- the lift: waits for callers, carries them to their floor ----
 const lift={fl:1,y:FLOORS[1].y,door:0,state:'idle',target:1,hold:0,riders:[]};
+// call bells at the bottom (basement) and top (penthouse) landings: click one to summon the lift
+const BELL_FLOORS=[0,TOPFL], BELL_X=LIFT_L-8, bellCalls=new Set(), bellRing={0:0,[TOPFL]:0};
+function bellY(fi){return FLOORS[fi].y-26;}
+{let down=null;
+ cv.addEventListener('pointerdown',e=>{down={x:e.clientX,y:e.clientY};});
+ cv.addEventListener('pointerup',e=>{
+   if(!down||Math.hypot(e.clientX-down.x,e.clientY-down.y)>6){down=null;return;} down=null;
+   const S=camScale(), wx=(e.clientX*devicePixelRatio-camX)/S, wy=(e.clientY*devicePixelRatio-camY)/S;
+   for(const fi of BELL_FLOORS)if(Math.hypot(wx-BELL_X,wy-bellY(fi))<14){
+     bellRing[fi]=1.2;
+     if(!fx.liftBroken)bellCalls.add(fi);
+     break;}});}
 function liftBusy(){return people.some(p=>p.queue[0]&&p.queue[0].t==='lift'&&p.queue[0].phase==='board');}
 function updateLift(dt){
+  for(const k of BELL_FLOORS)if(bellRing[k]>0)bellRing[k]=Math.max(0,bellRing[k]-dt);
   if(fx.liftBroken){
+    bellCalls.clear();
     if(lift.state!=='broken'){ // stall at the nearest floor and let everyone out
       let bi=1,bd=1e9; for(let i=0;i<8;i++){const d=Math.abs(FLOORS[i].y-lift.y); if(d<bd){bd=d;bi=i;}}
       lift.fl=bi; lift.y=FLOORS[bi].y; lift.state='broken';}
@@ -1840,6 +1920,8 @@ function updateLift(dt){
   const calls=new Set();
   for(const p of people)if(typeof p.floor==='number'&&p.queue[0]&&p.queue[0].t==='lift'&&p.queue[0].phase==='wait')calls.add(p.floor);
   for(const r of lift.riders)calls.add(r.to);
+  for(const f of bellCalls)calls.add(f);
+  if(lift.state==='open'&&lift.door>0.5)bellCalls.delete(lift.fl);
   const next=()=>{let best=null,bd=99;
     for(const f of calls){if(f===lift.fl)continue; const d=Math.abs(f-lift.fl); if(d<bd){bd=d;best=f;}}
     return best;};
@@ -1996,6 +2078,17 @@ function render(time){
    ctx.strokeStyle='#8a7a62'; ctx.lineWidth=1.5; ctx.strokeRect(cl,lift.y-cabH,cw,cabH);
    if(fx.liftBroken){ctx.fillStyle=Math.sin(time*5)>0?'#c83a2a':'#5a1a12';ctx.beginPath();ctx.arc(730,lift.y-cabH-8,4,0,7);ctx.fill();
      ctx.fillStyle='#e8d7ae';ctx.font='bold 8px Georgia';ctx.textAlign='center';ctx.fillText('OUT OF ORDER',730,FLOORS[1].y-52);}}
+  // lift call bells: brass dome on a plate at the bottom and top landings; glows while the lift is summoned
+  for(const fi of BELL_FLOORS){const bx=BELL_X, by=bellY(fi), rg=bellRing[fi], sh=rg>0?Math.sin(time*40)*2*Math.min(1,rg):0;
+   ctx.fillStyle='#3c2c1a'; ctx.fillRect(bx-6,by-8,12,18);
+   ctx.fillStyle='#6e5c44'; ctx.fillRect(bx-5,by-7,10,16);
+   ctx.save(); ctx.translate(bx+sh,by-1);
+   ctx.fillStyle='#d8b45a'; ctx.beginPath(); ctx.arc(0,0,4.5,3.14,6.28); ctx.fill(); ctx.fillRect(-5,0,10,1.5);
+   ctx.fillStyle='#fff3c4'; ctx.fillRect(-2,-3.5,1.5,1.5);
+   ctx.fillStyle='#8a1f12'; ctx.beginPath(); ctx.arc(0,5,1.8,0,7); ctx.fill(); // push button
+   ctx.restore();
+   if(bellCalls.has(fi)){ctx.fillStyle=Math.sin(time*6)>0?'#ffd96a':'#8a6a22'; ctx.beginPath(); ctx.arc(bx,by-11,1.8,0,7); ctx.fill();}
+   if(rg>0){ctx.globalAlpha=Math.min(1,rg); ctx.fillStyle='#ffe9a8'; ctx.font='bold 8px Georgia'; ctx.textAlign='right'; ctx.fillText('ding!',bx-9,by-12-(1.2-rg)*6); ctx.globalAlpha=1; ctx.textAlign='left';}}
   // reception counter re-drawn over people, so staff stand BEHIND the desk
   {const y=FLOORS[1].y;
    ctx.fillStyle='#3c2415'; ctx.fillRect(470,y-24,66,6);
@@ -2493,6 +2586,7 @@ function frame(now){
       else if(p.kind==='tenant')planTenant(p,h,day,gm);
       else if(p.kind==='guest'){planGuest(p,h,day,gm);guestPostUpdate(p);}
       else if(p.kind==='visitor')planVisitor(p);
+      else if(p.kind==='tradie'&&p.meta.job==='wcleaner')planWcleaner(p,gm);
       updatePerson(p,dt,wm);
     }
   }
